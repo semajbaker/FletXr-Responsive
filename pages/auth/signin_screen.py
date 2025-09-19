@@ -32,9 +32,9 @@ class SignInScreen(FletXPage):
         MediaQuery.register(self.tablet_text.value, self.tablet_min_width.value, self.tablet_max_width.value)     
         MediaQuery.register(self.desktop_text.value, self.desktop_min_width.value, self.desktop_max_width.value)     
         # Register callbacks for breakpoint changes
-        MediaQuery.on(self.mobile_text, self._handle_mobile_layout)
-        MediaQuery.on(self.tablet_text, self._handle_tablet_layout)
-        MediaQuery.on(self.desktop_text, self._handle_desktop_layout)
+        MediaQuery.on(self.mobile_text.value, self._handle_mobile_layout)
+        MediaQuery.on(self.tablet_text.value, self._handle_tablet_layout)
+        MediaQuery.on(self.desktop_text.value, self._handle_desktop_layout)
         MediaQuery.initialize_with_page(self.page)
         animate_boxes(self, self.box1, self.box2, self.box3, self.box4, self.animation_value)
 
