@@ -1,0 +1,25 @@
+version: "3"
+networks:
+  load_management_net:
+    ipam:
+      config:
+        - subnet: 192.168.0.0/24
+          gateway: 192.168.0.1
+services:
+  flet:
+   image: python:custom
+   container_name: flet_app
+   ports:
+     - "8000-8010:8000-8010"  # Map range of ports
+   user: "james"
+   volumes:
+     - ./:/home/james
+   command: ["bash", "auto_reload.sh"]
+   environment:
+     - PYTHONUNBUFFERED=1  # Force Python to output immediately
+     - PYTHONIOENCODING=utf-8  # Ensure proper encoding
+   tty: true  # Allocate a pseudo-TTY for better log output
+   stdin_open: true  # Keep container interactive
+   networks:
+     load_management_net:
+       ipv4_address: 192.168.0.2

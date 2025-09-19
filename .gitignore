@@ -1,0 +1,11 @@
+__pycache__/
+node_modules/
+database/
+storage/
+.vscode/
+.npm/
+session_data.json
+*.pyo
+*.pyd
+*.pwc
+*.pkl
