@@ -1,10 +1,9 @@
 import flet as ft
-from fletx.core import FletXPage, RxInt, RxStr
+from fletx.core import FletXPage
 from utils.animation_manager import animate_boxes
 from widgets.animated_box import animated_box
 from widgets.input_field import input_field
 from controllers.animation_controller import AnimationController
-from utils.responsive_manager import MediaQuery
 from constants.ui_constants import AppColors
 
 class SignInScreen(FletXPage):
@@ -19,38 +18,7 @@ class SignInScreen(FletXPage):
 
     def on_init(self):
         self.animation_value = self.animation_ctrl.start_animation()
-        self.mobile_text = RxStr('mobile')
-        self.mobile_min_width = RxStr(0)
-        self.mobile_max_width = RxInt(768)
-        self.tablet_text = RxStr('tablet')
-        self.tablet_min_width = RxStr(768)
-        self.tablet_max_width = RxStr(1024)
-        self.desktop_text = RxStr('desktop')
-        self.desktop_min_width = RxStr(1024)
-        self.desktop_max_width = RxStr(1912)
-        MediaQuery.register(self.mobile_text.value, self.mobile_min_width.value, self.mobile_max_width.value)     
-        MediaQuery.register(self.tablet_text.value, self.tablet_min_width.value, self.tablet_max_width.value)     
-        MediaQuery.register(self.desktop_text.value, self.desktop_min_width.value, self.desktop_max_width.value)     
-        # Register callbacks for breakpoint changes
-        MediaQuery.on(self.mobile_text.value, self._handle_mobile_layout)
-        MediaQuery.on(self.tablet_text.value, self._handle_tablet_layout)
-        MediaQuery.on(self.desktop_text.value, self._handle_desktop_layout)
-        MediaQuery.initialize_with_page(self.page)
         animate_boxes(self, self.box1, self.box2, self.box3, self.box4, self.animation_value)
-
-    def _handle_mobile_layout(self):
-        """Handle mobile breakpoint activation"""
-        print("Switched to mobile layout")
-        # Add mobile-specific layout changes here
-        
-    def _handle_tablet_layout(self):
-        """Handle tablet breakpoint activation"""
-        print("Switched to tablet layout")
-        # Add tablet-specific layout changes here
-        
-    def _handle_desktop_layout(self):
-        """Handle desktop breakpoint activation"""
-        print("Switched to desktop layout")
 
     def build(self):
         return ft.Container(
