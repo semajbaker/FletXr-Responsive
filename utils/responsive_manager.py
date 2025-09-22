@@ -60,3 +60,9 @@ class MediaQuery:
         """Initialize the media query system with a page - call from page's on_init"""
         controller = cls.get_controller()
         controller.initialize_with_page(page)
+    
+    @classmethod
+    def complete_registration(cls):
+        """Call after all breakpoints and listeners are registered to start responsive checking"""
+        controller = cls.get_controller()
+        controller.complete_registration()

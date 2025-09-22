@@ -14,6 +14,7 @@ class MediaQueryController(FletXController):
     _shared_initialized = False
     _shared_width = RxInt(1912)
     _shared_current_breakpoint = RxStr("default")
+    _shared_registration_complete = False
     
     def __init__(self):
         super().__init__()
@@ -24,10 +25,10 @@ class MediaQueryController(FletXController):
         self._breakpoints = MediaQueryController._shared_breakpoints
         self._listeners = MediaQueryController._shared_listeners
         
-        # Set up listeners only once
+        # Set up listeners only once - but don't trigger width changes during registration
         if not hasattr(MediaQueryController, '_listeners_initialized'):
+            # Only listen to width changes, not breakpoint changes during registration
             self.window_width.listen(self._on_width_changed)
-            self._breakpoints.listen(self._on_breakpoints_changed)
             MediaQueryController._listeners_initialized = True
     
     @property
@@ -38,10 +39,13 @@ class MediaQueryController(FletXController):
     def _initialized(self, value):
         MediaQueryController._shared_initialized = value
     
-    def _on_breakpoints_changed(self):
-        """React to breakpoint registration changes"""
-        if self._initialized:
-            self._check_for_updates(self.window_width.value)
+    @property
+    def _registration_complete(self):
+        return MediaQueryController._shared_registration_complete
+    
+    @_registration_complete.setter
+    def _registration_complete(self, value):
+        MediaQueryController._shared_registration_complete = value
     
     def initialize_with_page(self, page: ft.Page):
         """Initialize with page reference - called from page's on_init"""
@@ -50,24 +54,32 @@ class MediaQueryController(FletXController):
             
         page.on_resized = self._handle_resize
         
-        # Set initial width if available
+        # Set initial width if available - checks are prevented by _registration_complete flag
         if hasattr(page, 'width') and page.width:
             self.window_width.value = page.width
         
-        # Trigger initial breakpoint check
-        self._check_for_updates(self.window_width.value)
         self._initialized = True
+    
+    def complete_registration(self):
+        """Call this after all breakpoints are registered to trigger initial check"""
+        self._registration_complete = True
+        if self._initialized:
+            self._check_for_updates(self.window_width.value)
     
     def _handle_resize(self, event: ft.WindowResizeEvent):
         """Handle window resize events from Flet"""
         self.window_width.value = event.width
     
     def _on_width_changed(self):
-        """React to width changes and update current breakpoint - called by RxInt listener"""
-        self._check_for_updates(self.window_width.value)
+        """React to width changes and update current breakpoint - only after registration is complete"""
+        if self._registration_complete and self._initialized:
+            self._check_for_updates(self.window_width.value)
     
     def _check_for_updates(self, width: int):
         """Check if breakpoint should change based on current width"""
+        if not self._registration_complete:
+            return
+            
         print(f"Checking width: {width}")
         print(f"Available breakpoints: {list(self._breakpoints.value.keys())}")
         print(f"Available listeners: {list(self._listeners.value.keys())}")
@@ -107,9 +119,7 @@ class MediaQueryController(FletXController):
             current_listeners[point] = RxList([])
             self._listeners.value = current_listeners
         
-        # Check if this breakpoint should be active now
-        if self._initialized:
-            self._check_for_updates(self.window_width.value)
+        # Don't trigger updates during registration phase
     
     def on(self, point: str, callback_function: Callable):
         """Register a callback for when a breakpoint becomes active"""
@@ -124,8 +134,8 @@ class MediaQueryController(FletXController):
         current_listeners[point] = RxList(new_list)
         self._listeners.value = current_listeners
         
-        # If this breakpoint is currently active, call the callback immediately
-        if self.current_breakpoint.value == point and self._initialized:
+        # If this breakpoint is currently active and registration is complete, call the callback immediately
+        if self.current_breakpoint.value == point and self._initialized and self._registration_complete:
             try:
                 callback_function()
             except Exception as e:

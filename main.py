@@ -36,19 +36,29 @@ def main(page: ft.Page):
     desktop_text = RxStr('desktop')
     desktop_min_width = RxStr(1024)
     desktop_max_width = RxStr(1912)
+    
     # Add your route
     router_config.add_routes([
-                 # Main entry point
+        # Main entry point
         {"path": "/signin", "component": SignInScreen}  # Static settings page
     ])
+    
+    # Initialize MediaQuery first
     MediaQuery.initialize_with_page(page)
+    
+    # Register all breakpoints
     MediaQuery.register(mobile_text.value, mobile_min_width.value, mobile_max_width.value)     
     MediaQuery.register(tablet_text.value, tablet_min_width.value, tablet_max_width.value)     
     MediaQuery.register(desktop_text.value, desktop_min_width.value, desktop_max_width.value)     
-    # Register callbacks for breakpoint changes
+    
+    # Register all callbacks for breakpoint changes
     MediaQuery.on(mobile_text.value, _handle_mobile_layout)
     MediaQuery.on(tablet_text.value, _handle_tablet_layout)
     MediaQuery.on(desktop_text.value, _handle_desktop_layout)
+    
+    # Complete registration - this will trigger the initial breakpoint check
+    MediaQuery.complete_registration()
+    
     # Create the FletXr app
     app = FletXApp(
         title="Counter App",
