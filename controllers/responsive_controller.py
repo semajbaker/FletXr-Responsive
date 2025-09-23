@@ -1,6 +1,7 @@
 import flet as ft
 from typing import Dict, List, Tuple, Callable
 from fletx.core import FletXController, RxStr, RxInt, RxDict, RxList
+from constants.responsive_constants import InputFieldSizes, InputContainerSizes
 
 class MediaQueryController(FletXController):
     """
@@ -16,6 +17,10 @@ class MediaQueryController(FletXController):
     _shared_current_breakpoint = RxStr("default")
     _shared_registration_complete = False
     
+    # Add reactive properties for UI dimensions
+    _shared_container_width = RxInt(InputContainerSizes.DESKTOP_WIDTH)
+    _shared_field_width = RxInt(InputFieldSizes.DESKTOP_WIDTH)
+    
     def __init__(self):
         super().__init__()
         
@@ -24,6 +29,10 @@ class MediaQueryController(FletXController):
         self.current_breakpoint = MediaQueryController._shared_current_breakpoint
         self._breakpoints = MediaQueryController._shared_breakpoints
         self._listeners = MediaQueryController._shared_listeners
+        
+        # Reactive UI dimensions
+        self.container_width = MediaQueryController._shared_container_width
+        self.field_width = MediaQueryController._shared_field_width
         
         # Set up listeners only once - but don't trigger width changes during registration
         if not hasattr(MediaQueryController, '_listeners_initialized'):
@@ -75,6 +84,15 @@ class MediaQueryController(FletXController):
         if self._registration_complete and self._initialized:
             self._check_for_updates(self.window_width.value)
     
+    def _update_ui_dimensions(self, breakpoint: str):
+        """Update UI dimensions based on current breakpoint"""
+        if breakpoint == 'mobile':
+            self.container_width.value = InputContainerSizes.MOBILE_WIDTH
+            self.field_width.value = InputFieldSizes.MOBILE_WIDTH
+        else:  # tablet and desktop
+            self.container_width.value = InputContainerSizes.DESKTOP_WIDTH
+            self.field_width.value = InputFieldSizes.DESKTOP_WIDTH
+    
     def _check_for_updates(self, width: int):
         """Check if breakpoint should change based on current width"""
         if not self._registration_complete:
@@ -92,6 +110,9 @@ class MediaQueryController(FletXController):
                     self.current_breakpoint.value = name
                     print(f"Breakpoint changed from '{old_breakpoint}' to '{name}'")
                     
+                    # Update UI dimensions when breakpoint changes
+                    self._update_ui_dimensions(name)
+                    
                     # Trigger listeners for the new breakpoint
                     if name in self._listeners.value:
                         listener_list = self._listeners.value[name]
@@ -104,6 +125,9 @@ class MediaQueryController(FletXController):
                                 print(f"Error in breakpoint listener: {e}")
                     else:
                         print(f"No listeners found for breakpoint '{name}'")
+                else:
+                    # Even if breakpoint hasn't changed, ensure dimensions are correct
+                    self._update_ui_dimensions(name)
                 return
         
         print("No matching breakpoint found")
