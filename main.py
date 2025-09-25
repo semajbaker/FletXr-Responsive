@@ -21,7 +21,6 @@ def main(page: ft.Page):
     desktop_text = RxStr('desktop')
     desktop_min_width = RxStr(1024)
     desktop_max_width = RxStr(1912)
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
     # Add your route
     router_config.add_routes([
         # Main entry point
