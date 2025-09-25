@@ -3,6 +3,9 @@ from fletx.core import FletXPage
 from utils.animation_manager import animate_boxes
 from widgets.animated_box import animated_box
 from widgets.input_field import input_field
+from widgets.main_auth_btn import main_auth_btn
+from widgets.auth_action_controlls import auth_action_controlls
+from widgets.auth_divider import auth_divider
 from controllers.animation_controller import AnimationController
 from constants.ui_constants import AppColors
 
@@ -36,6 +39,9 @@ class SignInScreen(FletXPage):
                 content=ft.Column(
                     horizontal_alignment=ft.CrossAxisAlignment.CENTER,
                     spacing=0,
+                    scroll=ft.ScrollMode.AUTO,  # Add this for scrolling
+                    auto_scroll=True,
+                    expand=True,  # Add this to allow column to expand
                     controls=[
                         ft.Container(height=30),
                         ft.Container(
@@ -96,83 +102,17 @@ class SignInScreen(FletXPage):
                         input_field("Enter your password", ft.Icons.LOCK_OUTLINE, hide=True),
 
                         ft.Container(height=25),
-                        ft.Container(
-                            width=350,
-                            content=ft.Row(
-                                alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                                controls=[
-                                    ft.TextButton(
-                                        "Create Account",
-                                        style=ft.ButtonStyle(
-                                            color=ft.Colors.BLUE_GREY_400,
-                                            overlay_color=ft.Colors.with_opacity(0.2, ft.Colors.BLUE_GREY_400),
-                                            text_style=ft.TextStyle(
-                                                weight=ft.FontWeight.W_300,
-                                                size=12
-                                            ),
-                                        ),
-                                    ),
-                                    ft.TextButton(
-                                        "Forgot password?",
-                                        style=ft.ButtonStyle(
-                                            color=ft.Colors.BLUE_GREY_400,
-                                            overlay_color=ft.Colors.with_opacity(0.2, ft.Colors.BLUE_GREY_400),
-                                            text_style=ft.TextStyle(
-                                                weight=ft.FontWeight.W_300,
-                                                size=12
-                                            ),
-                                        ),
-                                    ),
-                                ]
-                            ),
-                        ),
+                        
+                        auth_action_controlls(),
+
                         ft.Container(height=20),
-                        ft.Container(
-                            width=350,
-                            height=55,
-                            bgcolor=ft.Colors.BLUE_600,
-                            border_radius=15,
-                            shadow=ft.BoxShadow(
-                                spread_radius=1,
-                                offset=ft.Offset(0, 4),
-                                blur_radius=10,
-                                color=ft.Colors.with_opacity(0.3, ft.Colors.BLUE_400),
-                            ),
-                            content=ft.TextButton(
-                                "Sign In",
-                                style=ft.ButtonStyle(
-                                    color=ft.Colors.WHITE,
-                                    text_style=ft.TextStyle(
-                                        size=18,
-                                        weight=ft.FontWeight.BOLD
-                                    ),
-                                    overlay_color=ft.Colors.with_opacity(0.1, ft.Colors.WHITE),
-                                ),
-                            ),
-                        ),
+
+                        main_auth_btn("Sign In"),
+
                         ft.Container(height=25),
-                        ft.Row(
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            spacing=10,
-                            controls=[
-                                ft.Container(
-                                    width=100,
-                                    height=1,
-                                    bgcolor=ft.Colors.BLUE_GREY_200
-                                ),
-                                ft.Text(
-                                    "Or continue with",
-                                    size=14,
-                                    color=ft.Colors.BLUE_GREY_400,
-                                    weight=ft.FontWeight.W_500
-                                ),
-                                ft.Container(
-                                    width=100,
-                                    height=1,
-                                    bgcolor=ft.Colors.BLUE_GREY_200
-                                ),
-                            ]
-                        ),
+
+                        auth_divider(),
+
                         ft.Container(height=25),
                         ft.Row(
                             alignment=ft.MainAxisAlignment.CENTER,

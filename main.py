@@ -21,11 +21,11 @@ def main(page: ft.Page):
     desktop_text = RxStr('desktop')
     desktop_min_width = RxStr(1024)
     desktop_max_width = RxStr(1912)
-
+    page.vertical_alignment = ft.MainAxisAlignment.CENTER
     # Add your route
     router_config.add_routes([
         # Main entry point
-        {"path": "/signin", "component": SignInScreen}  # Static settings page
+        {"path": "/signin", "component": SignInScreen}
     ])
 
     # Initialize MediaQuery first
@@ -41,7 +41,7 @@ def main(page: ft.Page):
     
     # Create the FletXr app
     app = FletXApp(
-        title="Counter App",
+        title="FletXr Responsive UI",
         initial_route="/signin",
         debug=True,
     ).with_theme(

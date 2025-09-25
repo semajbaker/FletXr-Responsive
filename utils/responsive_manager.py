@@ -56,28 +56,22 @@ class MediaQuery:
         return controller.window_width.value
     
     @classmethod
-    def get_container_width(cls) -> int:
-        """Get the current responsive container width"""
-        controller = cls.get_controller()
-        return controller.container_width.value
-    
-    @classmethod
-    def get_field_width(cls) -> int:
-        """Get the current responsive field width"""
-        controller = cls.get_controller()
-        return controller.field_width.value
-    
-    @classmethod
-    def get_container_width_rx(cls):
+    def get_shared_container_width_rx(cls):
         """Get the reactive container width property"""
         controller = cls.get_controller()
-        return controller.container_width
+        return controller.shared_container_width
     
     @classmethod
-    def get_field_width_rx(cls):
+    def get_text_field_width_rx(cls):
         """Get the reactive field width property"""
         controller = cls.get_controller()
-        return controller.field_width
+        return controller.shared_text_field_width
+
+    @classmethod
+    def get_auth_divider_width_rx(cls):
+        """Get the reactive field width property"""
+        controller = cls.get_controller()
+        return controller.auth_divider_width
     
     @classmethod
     def initialize_with_page(cls, page: ft.Page):

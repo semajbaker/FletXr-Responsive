@@ -7,8 +7,8 @@ class ResponsiveInputField(ft.Container):
     
     def __init__(self, hint_text: str, icon: ft.Icons, hide: bool = False):
         # Get reactive properties
-        self.container_width_rx = MediaQuery.get_container_width_rx()
-        self.field_width_rx = MediaQuery.get_field_width_rx()
+        self.container_width_rx = MediaQuery.get_shared_container_width_rx()
+        self.field_width_rx = MediaQuery.get_text_field_width_rx()
         
         # Create the text field first so we can reference it in the listener
         self.text_field = ft.TextField(
@@ -60,14 +60,14 @@ class ResponsiveInputField(ft.Container):
     
     def _on_container_width_changed(self):
         """Called when container width changes"""
-        print(f"Container width changed to: {self.container_width_rx.value}")
+        print(f"Input container width changed to: {self.container_width_rx.value}")
         self.width = self.container_width_rx.value
         if hasattr(self, 'page') and self.page:
             self.update()
     
     def _on_field_width_changed(self):
         """Called when field width changes"""
-        print(f"Field width changed to: {self.field_width_rx.value}")
+        print(f"Text field width changed to: {self.field_width_rx.value}")
         self.text_field.width = self.field_width_rx.value
         if hasattr(self, 'page') and self.page:
             self.update()

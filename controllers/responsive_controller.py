@@ -1,7 +1,7 @@
 import flet as ft
 from typing import Dict, List, Tuple, Callable
 from fletx.core import FletXController, RxStr, RxInt, RxDict, RxList
-from constants.responsive_constants import InputFieldSizes, InputContainerSizes
+from constants.responsive_constants import *
 
 class MediaQueryController(FletXController):
     """
@@ -18,8 +18,9 @@ class MediaQueryController(FletXController):
     _shared_registration_complete = False
     
     # Add reactive properties for UI dimensions
-    _shared_container_width = RxInt(InputContainerSizes.DESKTOP_WIDTH)
-    _shared_field_width = RxInt(InputFieldSizes.DESKTOP_WIDTH)
+    _shared_container_width = RxInt(SharedContainerSizes.DESKTOP_WIDTH)
+    _shared_text_field_width = RxInt(InputFieldSizes.DESKTOP_WIDTH)
+    _auth_divider_width = RxInt(AuthDividerSizes.DESKTOP_WIDTH)
     
     def __init__(self):
         super().__init__()
@@ -31,8 +32,9 @@ class MediaQueryController(FletXController):
         self._listeners = MediaQueryController._shared_listeners
         
         # Reactive UI dimensions
-        self.container_width = MediaQueryController._shared_container_width
-        self.field_width = MediaQueryController._shared_field_width
+        self.shared_container_width = MediaQueryController._shared_container_width
+        self.shared_text_field_width = MediaQueryController._shared_text_field_width
+        self.auth_divider_width = MediaQueryController._auth_divider_width
         
         # Set up listeners only once - but don't trigger width changes during registration
         if not hasattr(MediaQueryController, '_listeners_initialized'):
@@ -87,11 +89,13 @@ class MediaQueryController(FletXController):
     def _update_ui_dimensions(self, breakpoint: str):
         """Update UI dimensions based on current breakpoint"""
         if breakpoint == 'mobile':
-            self.container_width.value = InputContainerSizes.MOBILE_WIDTH
-            self.field_width.value = InputFieldSizes.MOBILE_WIDTH
+            self.shared_container_width.value = SharedContainerSizes.MOBILE_WIDTH
+            self.shared_text_field_width.value = InputFieldSizes.MOBILE_WIDTH
+            self.auth_divider_width.value = AuthDividerSizes.MOBILE_WIDTH
         else:  # tablet and desktop
-            self.container_width.value = InputContainerSizes.DESKTOP_WIDTH
-            self.field_width.value = InputFieldSizes.DESKTOP_WIDTH
+            self.shared_container_width.value = SharedContainerSizes.DESKTOP_WIDTH
+            self.shared_text_field_width.value = InputFieldSizes.DESKTOP_WIDTH
+            self.auth_divider_width.value = AuthDividerSizes.DESKTOP_WIDTH
     
     def _check_for_updates(self, width: int):
         """Check if breakpoint should change based on current width"""
