@@ -21,6 +21,7 @@ class MediaQueryController(FletXController):
     _shared_container_width = RxInt(SharedContainerSizes.DESKTOP_WIDTH)
     _shared_text_field_width = RxInt(InputFieldSizes.DESKTOP_WIDTH)
     _auth_divider_width = RxInt(AuthDividerSizes.DESKTOP_WIDTH)
+    _auth_navigation_controls_width = RxInt(AuthNavigationControlSizes.DESKTOP_WIDTH)
     
     def __init__(self):
         super().__init__()
@@ -35,6 +36,7 @@ class MediaQueryController(FletXController):
         self.shared_container_width = MediaQueryController._shared_container_width
         self.shared_text_field_width = MediaQueryController._shared_text_field_width
         self.auth_divider_width = MediaQueryController._auth_divider_width
+        self.auth_navigation_controls_width = MediaQueryController._auth_navigation_controls_width
         
         # Set up listeners only once - but don't trigger width changes during registration
         if not hasattr(MediaQueryController, '_listeners_initialized'):
@@ -92,10 +94,12 @@ class MediaQueryController(FletXController):
             self.shared_container_width.value = SharedContainerSizes.MOBILE_WIDTH
             self.shared_text_field_width.value = InputFieldSizes.MOBILE_WIDTH
             self.auth_divider_width.value = AuthDividerSizes.MOBILE_WIDTH
+            self.auth_navigation_controls_width.value = AuthNavigationControlSizes.MOBILE_WIDTH
         else:  # tablet and desktop
             self.shared_container_width.value = SharedContainerSizes.DESKTOP_WIDTH
             self.shared_text_field_width.value = InputFieldSizes.DESKTOP_WIDTH
             self.auth_divider_width.value = AuthDividerSizes.DESKTOP_WIDTH
+            self.auth_navigation_controls_width.value = AuthNavigationControlSizes.DESKTOP_WIDTH
     
     def _check_for_updates(self, width: int):
         """Check if breakpoint should change based on current width"""

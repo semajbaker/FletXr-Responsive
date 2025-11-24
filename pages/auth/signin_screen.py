@@ -55,8 +55,8 @@ class SignInScreen(FletXPage):
             alignment=ft.alignment.center,
             padding=ft.padding.all(20),
             content=ft.Card(
-                width=500,
-                height=750,
+                width=520,
+                height=760,
                 elevation=8,
                 surface_tint_color=AppColors.LIGHT['surface'],
                 color=AppColors.LIGHT['background'],
@@ -121,14 +121,19 @@ class SignInScreen(FletXPage):
                         input_field("Enter your email address", ft.Icons.ALTERNATE_EMAIL, hide=False),
                         ft.Container(height=20),
                         input_field("Enter your password", ft.Icons.LOCK_OUTLINE, hide=True),
-                        ft.Container(height=25),
-                        auth_action_controlls(
-                            primary_action_text="Create Account",
-                            primary_action_on_click=self.go_to_signup,
-                            show_forgot_password=True,
-                            forgot_password_on_click=self.handle_forgot_password
+                        ft.Container(height=30),
+                        ft.Row(
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            controls=[
+                                auth_action_controlls(
+                                    primary_action_text="Sign Up",
+                                    primary_action_on_click=self.go_to_signup,
+                                    show_forgot_password=True,
+                                    forgot_password_on_click=self.handle_forgot_password
+                                )
+                            ]
                         ),
-                        ft.Container(height=20),
+                        ft.Container(height=30),
                         main_auth_btn("Sign In"),
                         ft.Container(height=25),
                         auth_divider(),

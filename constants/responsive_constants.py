@@ -14,3 +14,7 @@ class SharedContainerSizes:
 class AuthDividerSizes:
     MOBILE_WIDTH = 80
     DESKTOP_WIDTH = 100
+
+class AuthNavigationControlSizes:
+    MOBILE_WIDTH = 300
+    DESKTOP_WIDTH = 350

@@ -50,8 +50,8 @@ class SignUpScreen(FletXPage):
             alignment=ft.alignment.center,
             padding=ft.padding.all(20),
             content=ft.Card(
-                width=500,
-                height=750,
+                width=520,
+                height=760,
                 elevation=8,
                 surface_tint_color=AppColors.LIGHT['surface'],
                 color=AppColors.LIGHT['background'],
@@ -121,10 +121,16 @@ class SignUpScreen(FletXPage):
                         ft.Container(height=20),
                         input_field("repeat your password", ft.Icons.LOCK_OUTLINE, hide=True),
                         ft.Container(height=25),
-                        auth_action_controlls(
-                            primary_action_text="Sign In",
-                            primary_action_on_click=self.go_to_signin,
-                            show_forgot_password=False
+                        ft.Row(
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            controls=[
+                                auth_action_controlls(
+                                    primary_action_text="Sign In",
+                                    primary_action_on_click=self.go_to_signin,
+                                    show_forgot_password=False,
+                                    forgot_password_on_click=None
+                                )
+                            ]
                         ),
                         ft.Container(height=20),
                         main_auth_btn("Sign Up"),

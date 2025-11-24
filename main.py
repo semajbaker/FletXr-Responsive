@@ -22,8 +22,6 @@ def main(page: ft.Page):
     desktop_text = RxStr('desktop')
     desktop_min_width = RxStr(1024)
     desktop_max_width = RxStr(1924)
-    page.vertical_alignment = ft.MainAxisAlignment.CENTER
-    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     # Add your route
     routes = [
         {
@@ -53,7 +51,7 @@ def main(page: ft.Page):
     # Create the FletXr app
     app = FletXApp(
         title="FletXr Responsive UI",
-        initial_route="/signup",
+        initial_route="/signin",
         debug=True,
     ).with_theme(
         ft.Theme(color_scheme_seed=ft.Colors.BLUE)

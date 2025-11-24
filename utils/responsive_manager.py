@@ -74,6 +74,12 @@ class MediaQuery:
         return controller.auth_divider_width
     
     @classmethod
+    def get_auth_navigation_controls_width_rx(cls):
+        """Get the reactive field width property"""
+        controller = cls.get_controller()
+        return controller.auth_navigation_controls_width
+    
+    @classmethod
     def initialize_with_page(cls, page: ft.Page):
         """Initialize the media query system with a page - call from page's on_init"""
         controller = cls.get_controller()
