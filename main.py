@@ -7,9 +7,10 @@ import warnings
 import flet as ft
 from fletx.app import FletXApp
 from fletx.core import RxInt, RxStr
-from fletx.navigation import router_config
 from pages.auth.signin_screen import SignInScreen
+from pages.auth.signup_screen import SignUpScreen
 from utils.responsive_manager import MediaQuery
+from fletx.navigation import router_config, RouteTransition, TransitionType
     
 def main(page: ft.Page):
     mobile_text = RxStr('mobile')
@@ -20,12 +21,23 @@ def main(page: ft.Page):
     tablet_max_width = RxStr(1024)
     desktop_text = RxStr('desktop')
     desktop_min_width = RxStr(1024)
-    desktop_max_width = RxStr(1912)
+    desktop_max_width = RxStr(1924)
+    page.vertical_alignment = ft.MainAxisAlignment.CENTER
+    page.horizontal_alignment = ft.CrossAxisAlignment.CENTER
     # Add your route
-    router_config.add_routes([
-        # Main entry point
-        {"path": "/signin", "component": SignInScreen}
-    ])
+    routes = [
+        {
+        "path": "/signin",
+        "component": SignInScreen,
+
+    },
+    {
+        "path": "/signup",
+        "component": SignUpScreen,
+
+    }
+    ]
+    router_config.add_routes(routes)
 
     # Initialize MediaQuery first
     MediaQuery.initialize_with_page(page)
@@ -41,10 +53,10 @@ def main(page: ft.Page):
     # Create the FletXr app
     app = FletXApp(
         title="FletXr Responsive UI",
-        initial_route="/signin",
+        initial_route="/signup",
         debug=True,
     ).with_theme(
-        ft.Theme(color_scheme_seed=ft.Colors.BLACK)
+        ft.Theme(color_scheme_seed=ft.Colors.BLUE)
     )
     
     # Run the app

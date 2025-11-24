@@ -1,16 +1,15 @@
 import flet as ft
 from fletx.core import FletXPage
 from fletx.navigation import navigate
-from utils.animation_manager import AnimationManager
 from widgets.animated_box import animated_box
+from utils.animation_manager import AnimationManager
 from widgets.input_field import input_field
 from widgets.main_auth_btn import main_auth_btn
-from widgets.auth_action_controlls import auth_action_controlls
-from widgets.auth_divider import auth_divider
 from controllers.animation_controller import AnimationController
 from constants.ui_constants import AppColors
+from widgets.auth_action_controlls import auth_action_controlls
 
-class SignInScreen(FletXPage):
+class SignUpScreen(FletXPage):
     def __init__(self):
         super().__init__()
         self.box1 = animated_box(ft.Colors.PINK_400, ft.Colors.PURPLE_300, 1.0)
@@ -36,17 +35,13 @@ class SignInScreen(FletXPage):
         if self.animation_ctrl:
             self.animation_ctrl.stop_animation()
         
-    def handle_forgot_password(self, e):
-        """Handle forgot password"""
-        print("Forgot password clicked")
-
-    def go_to_signup(self, e):
-        """Navigate to signup screen"""
-        print("Navigating to signup...")
+    def go_to_signin(self, e):
+        """Navigate to signin screen"""
+        print("Navigating to signin...")
         # Stop animation before navigating using controller
         if self.animation_ctrl:
             self.animation_ctrl.stop_animation()
-        navigate("/signup", replace=True, clear_history=True)
+        navigate("/signin", replace=True, clear_history=True)
 
     def build(self):
         return ft.Container(
@@ -104,7 +99,7 @@ class SignInScreen(FletXPage):
                             spacing=8,
                             controls=[
                                 ft.Text(
-                                    "Sign In", 
+                                    "Sign UP", 
                                     size=32, 
                                     weight=ft.FontWeight.BOLD, 
                                     color=ft.Colors.BLUE_GREY_800
@@ -118,61 +113,22 @@ class SignInScreen(FletXPage):
                             ]
                         ),
                         ft.Container(height=25),
+                        input_field("Enter your username", ft.Icons.VERIFIED_USER_OUTLINED, hide=False),
+                        ft.Container(height=20),
                         input_field("Enter your email address", ft.Icons.ALTERNATE_EMAIL, hide=False),
                         ft.Container(height=20),
                         input_field("Enter your password", ft.Icons.LOCK_OUTLINE, hide=True),
+                        ft.Container(height=20),
+                        input_field("repeat your password", ft.Icons.LOCK_OUTLINE, hide=True),
                         ft.Container(height=25),
                         auth_action_controlls(
-                            primary_action_text="Create Account",
-                            primary_action_on_click=self.go_to_signup,
-                            show_forgot_password=True,
-                            forgot_password_on_click=self.handle_forgot_password
+                            primary_action_text="Sign In",
+                            primary_action_on_click=self.go_to_signin,
+                            show_forgot_password=False
                         ),
                         ft.Container(height=20),
-                        main_auth_btn("Sign In"),
+                        main_auth_btn("Sign Up"),
                         ft.Container(height=25),
-                        auth_divider(),
-                        ft.Container(height=25),
-                        ft.Row(
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            spacing=15,
-                            controls=[
-                                ft.Container(
-                                    width=100,
-                                    height=50,
-                                    content=ft.FloatingActionButton(
-                                        content=ft.Icon(
-                                            ft.Icons.EMAIL, 
-                                            size=20, 
-                                            color=ft.Colors.BLUE_GREY_400
-                                        ),
-                                        width=30,
-                                        height=30,
-                                        bgcolor=ft.Colors.WHITE,
-                                        shape=ft.CircleBorder(),
-                                        elevation=3,
-                                        tooltip="Continue with Google",
-                                    ),
-                                ),
-                                ft.Container(
-                                    width=100,
-                                    height=50,
-                                    content=ft.FloatingActionButton(
-                                        content=ft.Icon(
-                                            ft.Icons.CODE, 
-                                            size=20, 
-                                            color=ft.Colors.BLUE_GREY_400
-                                        ),
-                                        width=30,
-                                        height=30,
-                                        bgcolor=ft.Colors.WHITE,
-                                        shape=ft.CircleBorder(),
-                                        elevation=3,
-                                        tooltip="Continue with Github",
-                                    ),
-                                ),
-                            ]
-                        )
                     ]
                 ),
             ),

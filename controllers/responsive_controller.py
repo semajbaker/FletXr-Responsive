@@ -14,7 +14,7 @@ class MediaQueryController(FletXController):
     _shared_listeners = RxDict({})
     _shared_initialized = False
     _shared_width = RxInt(1912)
-    _shared_current_breakpoint = RxStr("default")
+    _shared_current_breakpoint = RxStr("desktop")
     _shared_registration_complete = False
     
     # Add reactive properties for UI dimensions
