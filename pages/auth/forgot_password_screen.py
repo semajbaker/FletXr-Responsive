@@ -1,16 +1,15 @@
 import flet as ft
 from fletx.core import FletXPage
 from fletx.navigation import navigate
+from controllers.animation_controller import AnimationController
 from utils.animation_manager import AnimationManager
+from constants.ui_constants import AppColors
 from widgets.animated_box import animated_box
 from widgets.input_field import input_field
 from widgets.main_auth_btn import main_auth_btn
 from widgets.auth_action_controlls import auth_action_controlls
-from widgets.auth_divider import auth_divider
-from controllers.animation_controller import AnimationController
-from constants.ui_constants import AppColors
 
-class SignInScreen(FletXPage):
+class ForgotPasswordScreen(FletXPage):
     def __init__(self):
         super().__init__()
         self.box1 = animated_box(ft.Colors.PINK_400, ft.Colors.PURPLE_300, 1.0)
@@ -19,7 +18,7 @@ class SignInScreen(FletXPage):
         self.box4 = animated_box(ft.Colors.GREEN_400, ft.Colors.LIGHT_GREEN_300, 0.9)
         self.animation_ctrl = AnimationController()
         self.animation_manager = None
-        
+
     def on_init(self):
         """Initialize animation after page is ready"""
         # Create animation manager with page reference and controller
@@ -35,22 +34,14 @@ class SignInScreen(FletXPage):
         """Stop animation when leaving the page"""
         if self.animation_ctrl:
             self.animation_ctrl.stop_animation()
-        
-    def go_to_forgot_password(self, e):
-        """Handle forgot password"""
-        print("navigating toforgot password...")
-            # Stop animation before navigating using controller
-        if self.animation_ctrl:
-            self.animation_ctrl.stop_animation()
-        navigate("/forgot-password", replace=True, clear_history=True)
 
-    def go_to_signup(self, e):
-        """Navigate to signup screen"""
-        print("Navigating to signup...")
+    def go_to_signin(self, e):
+        """Navigate to signin screen"""
+        print("Navigating to signin...")
         # Stop animation before navigating using controller
         if self.animation_ctrl:
             self.animation_ctrl.stop_animation()
-        navigate("/signup", replace=True, clear_history=True)
+        navigate("/signin", replace=True, clear_history=True)
 
     def build(self):
         return ft.Container(
@@ -108,7 +99,7 @@ class SignInScreen(FletXPage):
                             spacing=8,
                             controls=[
                                 ft.Text(
-                                    "Sign In", 
+                                    "Password Reset", 
                                     size=32, 
                                     weight=ft.FontWeight.BOLD, 
                                     color=ft.Colors.BLUE_GREY_800
@@ -123,65 +114,21 @@ class SignInScreen(FletXPage):
                         ),
                         ft.Container(height=25),
                         input_field("Enter your email address", ft.Icons.ALTERNATE_EMAIL, hide=False),
-                        ft.Container(height=20),
-                        input_field("Enter your password", ft.Icons.LOCK_OUTLINE, hide=True),
+    
                         ft.Container(height=30),
                         ft.Row(
                             alignment=ft.MainAxisAlignment.CENTER,
                             controls=[
                                 auth_action_controlls(
-                                    primary_action_text="Sign Up",
-                                    primary_action_on_click=self.go_to_signup,
-                                    show_forgot_password=True,
-                                    forgot_password_on_click=self.go_to_forgot_password
+                                    primary_action_text="Sign In",
+                                    primary_action_on_click=self.go_to_signin,
+                                    show_forgot_password=False,
                                 )
                             ]
                         ),
                         ft.Container(height=30),
-                        main_auth_btn("Sign In"),
+                        main_auth_btn("Send Reset Link"),
                         ft.Container(height=25),
-                        auth_divider(),
-                        ft.Container(height=25),
-                        ft.Row(
-                            alignment=ft.MainAxisAlignment.CENTER,
-                            spacing=15,
-                            controls=[
-                                ft.Container(
-                                    width=100,
-                                    height=50,
-                                    content=ft.FloatingActionButton(
-                                        content=ft.Icon(
-                                            ft.Icons.EMAIL, 
-                                            size=20, 
-                                            color=ft.Colors.BLUE_GREY_400
-                                        ),
-                                        width=30,
-                                        height=30,
-                                        bgcolor=ft.Colors.WHITE,
-                                        shape=ft.CircleBorder(),
-                                        elevation=3,
-                                        tooltip="Continue with Google",
-                                    ),
-                                ),
-                                ft.Container(
-                                    width=100,
-                                    height=50,
-                                    content=ft.FloatingActionButton(
-                                        content=ft.Icon(
-                                            ft.Icons.CODE, 
-                                            size=20, 
-                                            color=ft.Colors.BLUE_GREY_400
-                                        ),
-                                        width=30,
-                                        height=30,
-                                        bgcolor=ft.Colors.WHITE,
-                                        shape=ft.CircleBorder(),
-                                        elevation=3,
-                                        tooltip="Continue with Github",
-                                    ),
-                                ),
-                            ]
-                        )
                     ]
                 ),
             ),

@@ -24,6 +24,8 @@ class ResponsiveAuthActionControls(ft.Container):
         # Determine the prefix text based on the action
         if primary_action_text.lower() == "sign in":
             self.prefix_text = "Already have an account? "
+        elif primary_action_text.lower() == "forgot password":
+            self.prefix_text = "Remember your password? "
         elif primary_action_text.lower() in ["sign up", "create account"]:
             self.prefix_text = "Don't have an account? "
         else:

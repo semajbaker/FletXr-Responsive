@@ -9,8 +9,9 @@ from fletx.app import FletXApp
 from fletx.core import RxInt, RxStr
 from pages.auth.signin_screen import SignInScreen
 from pages.auth.signup_screen import SignUpScreen
+from pages.auth.forgot_password_screen import ForgotPasswordScreen
 from utils.responsive_manager import MediaQuery
-from fletx.navigation import router_config, RouteTransition, TransitionType
+from fletx.navigation import router_config
     
 def main(page: ft.Page):
     mobile_text = RxStr('mobile')
@@ -32,6 +33,11 @@ def main(page: ft.Page):
     {
         "path": "/signup",
         "component": SignUpScreen,
+
+    },
+    {
+        "path": "/forgot-password",
+        "component": ForgotPasswordScreen,
 
     }
     ]
