@@ -1,25 +1,71 @@
 version: "3"
 networks:
-  load_management_net:
+  loan_management_net:
     ipam:
       config:
         - subnet: 192.168.0.0/24
           gateway: 192.168.0.1
 services:
+  database:
+    image: postgres:latest
+    container_name: database
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=semaj
+      - POSTGRES_PASSWORD=semaj
+      - POSTGRES_DB=loan_management_db
+    volumes:
+      - ./db/data:/var/lib/postgresql
+    networks:
+      loan_management_net:
+        ipv4_address: 192.168.0.2
+
+  dbAdmin_page:
+    image: dpage/pgadmin4
+    container_name: dbAdmin_page
+    ports:
+      - 5050:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=semaj@rootmail.com
+      - PGADMIN_DEFAULT_PASSWORD=semaj@rootmail.com
+    networks:
+      loan_management_net:
+        ipv4_address: 192.168.0.3
+    depends_on:
+      - database 
+
   flet:
-   image: python:custom
-   container_name: flet_app
-   ports:
-     - "8000-8010:8000-8010"  # Map range of ports
-   user: "james"
-   volumes:
-     - ./:/home/james
-   command: ["bash", "auto_reload.sh"]
-   environment:
-     - PYTHONUNBUFFERED=1  # Force Python to output immediately
-     - PYTHONIOENCODING=utf-8  # Ensure proper encoding
-   tty: true  # Allocate a pseudo-TTY for better log output
-   stdin_open: true  # Keep container interactive
-   networks:
-     load_management_net:
-       ipv4_address: 192.168.0.2
+    image: python:custom
+    container_name: flet_app
+    ports:
+      - "8000-8010:8000-8010"
+    user: "james"
+    volumes:
+      - ./:/home/james
+    command: ["bash", "auto_reload.sh"]
+    environment:
+      - PYTHONUNBUFFERED=1 
+      - PYTHONIOENCODING=utf-8  
+    tty: true 
+    stdin_open: true  
+    networks:
+      loan_management_net:
+        ipv4_address: 192.168.0.4
+  
+  api:
+    image: node:express
+    container_name: node_express_api
+    ports:
+      - 5000:5000
+    environment:
+      - WATCHPACK_POLLING=true
+    volumes:
+      - ./api:/home/james
+    user: james
+    depends_on:
+      - database
+    command: npm run dev
+    networks:
+      loan_management_net:
+        ipv4_address: 192.168.0.5

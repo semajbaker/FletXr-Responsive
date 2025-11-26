@@ -1,6 +1,7 @@
 __pycache__/
 node_modules/
-database/
+db/
+api/
 storage/
 .vscode/
 .npm/

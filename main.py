@@ -29,17 +29,17 @@ def main(page: ft.Page):
         "path": "/signin",
         "component": SignInScreen,
 
-    },
-    {
-        "path": "/signup",
-        "component": SignUpScreen,
+        },
+        {
+            "path": "/signup",
+            "component": SignUpScreen,
 
-    },
-    {
-        "path": "/forgot-password",
-        "component": ForgotPasswordScreen,
+        },
+        {
+            "path": "/forgot-password",
+            "component": ForgotPasswordScreen,
 
-    }
+        }
     ]
     router_config.add_routes(routes)
 

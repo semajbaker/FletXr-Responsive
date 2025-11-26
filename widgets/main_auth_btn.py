@@ -3,7 +3,7 @@ from utils.responsive_manager import MediaQuery
 
 class ResponsiveMainAuthBtn(ft.Container):
     """Reactive main auth btn that automatically updates when breakpoints change."""
-    def __init__(self, title: str):
+    def __init__(self, title: str, on_click=None):
         self.container_width_rx = MediaQuery.get_shared_container_width_rx()
 
         self.btn = ft.TextButton(
@@ -16,6 +16,7 @@ class ResponsiveMainAuthBtn(ft.Container):
                 ),
                 overlay_color=ft.Colors.with_opacity(0.1, ft.Colors.WHITE),
             ),
+            on_click=on_click
         )
         super().__init__(
             width=self.container_width_rx.value,
@@ -40,5 +41,5 @@ class ResponsiveMainAuthBtn(ft.Container):
             self.update()
         
 
-def main_auth_btn(title: str):
-    return ResponsiveMainAuthBtn(title)
+def main_auth_btn(title: str, on_click=None):
+    return ResponsiveMainAuthBtn(title, on_click)

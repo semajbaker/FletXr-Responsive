@@ -8,6 +8,7 @@ from widgets.main_auth_btn import main_auth_btn
 from widgets.auth_action_controlls import auth_action_controlls
 from widgets.auth_divider import auth_divider
 from controllers.animation_controller import AnimationController
+from controllers.auth_controller import SigninController
 from constants.ui_constants import AppColors
 
 class SignInScreen(FletXPage):
@@ -20,8 +21,20 @@ class SignInScreen(FletXPage):
         self.animation_ctrl = AnimationController()
         self.animation_manager = None
         
+        # Initialize SigninController
+        self.signin_controller = SigninController()
+        
+        # Create error text that will update reactively
+        self.error_text = ft.Text(
+            value="",
+            size=12,
+            color=ft.Colors.RED_400,
+            text_align=ft.TextAlign.CENTER,
+            visible=False
+        )
+        
     def on_init(self):
-        """Initialize animation after page is ready"""
+        """Initialize animation and controller after page is ready"""
         # Create animation manager with page reference and controller
         self.animation_manager = AnimationManager(self.page, self.animation_ctrl)
         
@@ -30,6 +43,31 @@ class SignInScreen(FletXPage):
         
         # Start animation using controller
         self.animation_ctrl.start_animation()
+        
+        # Set up listener for signin error
+        self.signin_controller.signin_error.listen(self._on_error_changed)
+    
+    def _on_error_changed(self):
+        """Handle error message changes"""
+        if self.signin_controller.signin_error.value:
+            self.error_text.value = self.signin_controller.signin_error.value
+            self.error_text.visible = True
+        else:
+            self.error_text.visible = False
+        self.error_text.update()
+    
+    def handle_signin(self, e):
+        """Handle sign in button click"""
+        print(f"Sign In clicked!")
+        print(f"Email: {self.signin_controller.email.value}")
+        print(f"Password: {self.signin_controller.password.value}")
+        
+        # Add your sign in logic here
+        if self.signin_controller.email.value and self.signin_controller.password.value:
+            print("Form is valid, proceeding with sign in...")
+            # Call your backend service here
+        else:
+            print("Form validation failed")
     
     def on_unmount(self):
         """Stop animation when leaving the page"""
@@ -38,8 +76,8 @@ class SignInScreen(FletXPage):
         
     def go_to_forgot_password(self, e):
         """Handle forgot password"""
-        print("navigating toforgot password...")
-            # Stop animation before navigating using controller
+        print("navigating to forgot password...")
+        # Stop animation before navigating using controller
         if self.animation_ctrl:
             self.animation_ctrl.stop_animation()
         navigate("/forgot-password", replace=True, clear_history=True)
@@ -122,10 +160,25 @@ class SignInScreen(FletXPage):
                             ]
                         ),
                         ft.Container(height=25),
-                        input_field("Enter your email address", ft.Icons.ALTERNATE_EMAIL, hide=False),
+                        # Email input field with reactive binding
+                        input_field(
+                            "Enter your email address", 
+                            ft.Icons.ALTERNATE_EMAIL, 
+                            hide=False,
+                            rx_value=self.signin_controller.email
+                        ),
                         ft.Container(height=20),
-                        input_field("Enter your password", ft.Icons.LOCK_OUTLINE, hide=True),
-                        ft.Container(height=30),
+                        # Password input field with reactive binding
+                        input_field(
+                            "Enter your password", 
+                            ft.Icons.LOCK_OUTLINE, 
+                            hide=True,
+                            rx_value=self.signin_controller.password
+                        ),
+                        ft.Container(height=10),
+                        # Error message display
+                        self.error_text,
+                        ft.Container(height=20),
                         ft.Row(
                             alignment=ft.MainAxisAlignment.CENTER,
                             controls=[
@@ -138,7 +191,7 @@ class SignInScreen(FletXPage):
                             ]
                         ),
                         ft.Container(height=30),
-                        main_auth_btn("Sign In"),
+                        main_auth_btn("Sign In", on_click=self.handle_signin),
                         ft.Container(height=25),
                         auth_divider(),
                         ft.Container(height=25),

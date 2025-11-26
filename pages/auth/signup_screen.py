@@ -6,6 +6,7 @@ from utils.animation_manager import AnimationManager
 from widgets.input_field import input_field
 from widgets.main_auth_btn import main_auth_btn
 from controllers.animation_controller import AnimationController
+from controllers.auth_controller import SignupController
 from constants.ui_constants import AppColors
 from widgets.auth_action_controlls import auth_action_controlls
 
@@ -19,8 +20,29 @@ class SignUpScreen(FletXPage):
         self.animation_ctrl = AnimationController()
         self.animation_manager = None
         
+        # Initialize SignupController
+        self.signup_controller = SignupController()
+        
+        # Create error text that will update reactively
+        self.error_text = ft.Text(
+            value="",
+            size=12,
+            color=ft.Colors.RED_400,
+            text_align=ft.TextAlign.CENTER,
+            visible=False
+        )
+        
+        # Create success text for validation feedback
+        self.success_text = ft.Text(
+            value="",
+            size=12,
+            color=ft.Colors.GREEN_600,
+            text_align=ft.TextAlign.CENTER,
+            visible=False
+        )
+        
     def on_init(self):
-        """Initialize animation after page is ready"""
+        """Initialize animation and controller after page is ready"""
         # Create animation manager with page reference and controller
         self.animation_manager = AnimationManager(self.page, self.animation_ctrl)
         
@@ -29,6 +51,59 @@ class SignUpScreen(FletXPage):
         
         # Start animation using controller
         self.animation_ctrl.start_animation()
+        
+        # Set up listener for signup error
+        self.signup_controller.signup_error.listen(self._on_error_changed)
+        self.signup_controller.is_valid.listen(self._on_validation_changed)
+    
+    def _on_error_changed(self):
+        """Handle error message changes"""
+        if self.signup_controller.signup_error.value:
+            self.error_text.value = self.signup_controller.signup_error.value
+            self.error_text.visible = True
+            self.success_text.visible = False
+        else:
+            self.error_text.visible = False
+        self.error_text.update()
+    
+    def _on_validation_changed(self):
+        """Handle validation state changes"""
+        if self.signup_controller.is_valid.value:
+            self.success_text.value = "All fields are valid! ✓"
+            self.success_text.visible = True
+            self.error_text.visible = False
+            self.success_text.update()
+        else:
+            self.success_text.visible = False
+            if hasattr(self, 'success_text') and self.success_text.page:
+                self.success_text.update()
+    
+    def handle_signup(self, e):
+        """Handle sign up button click"""
+        print(f"Sign Up clicked!")
+        
+        # Validate form one more time
+        self.signup_controller.validate_form()
+        
+        if self.signup_controller.is_valid.value:
+            # Get form data
+            signup_data = self.signup_controller.get_signup_data()
+            print(f"Username: {signup_data['username']}")
+            print(f"Email: {signup_data['email']}")
+            print(f"Password: {signup_data['password']}")
+            
+            print("Form is valid, proceeding with sign up...")
+            # Call your backend service here
+            # Example:
+            # response = backend_service.signup(signup_data)
+            # if response.success:
+            #     navigate("/signin")
+            
+            # For now, show success and optionally reset form
+            # self.signup_controller.reset_form()
+        else:
+            print("Form validation failed")
+            print(f"Error: {self.signup_controller.signup_error.value}")
     
     def on_unmount(self):
         """Stop animation when leaving the page"""
@@ -99,7 +174,7 @@ class SignUpScreen(FletXPage):
                             spacing=8,
                             controls=[
                                 ft.Text(
-                                    "Sign UP", 
+                                    "Sign Up", 
                                     size=32, 
                                     weight=ft.FontWeight.BOLD, 
                                     color=ft.Colors.BLUE_GREY_800
@@ -113,14 +188,43 @@ class SignUpScreen(FletXPage):
                             ]
                         ),
                         ft.Container(height=25),
-                        input_field("Enter your username", ft.Icons.VERIFIED_USER_OUTLINED, hide=False),
+                        # Username input field with reactive binding
+                        input_field(
+                            "Enter your username", 
+                            ft.Icons.VERIFIED_USER_OUTLINED, 
+                            hide=False,
+                            rx_value=self.signup_controller.username
+                        ),
                         ft.Container(height=20),
-                        input_field("Enter your email address", ft.Icons.ALTERNATE_EMAIL, hide=False),
+                        # Email input field with reactive binding
+                        input_field(
+                            "Enter your email address", 
+                            ft.Icons.ALTERNATE_EMAIL, 
+                            hide=False,
+                            rx_value=self.signup_controller.email
+                        ),
                         ft.Container(height=20),
-                        input_field("Enter your password", ft.Icons.LOCK_OUTLINE, hide=True),
+                        # Password input field with reactive binding
+                        input_field(
+                            "Enter your password", 
+                            ft.Icons.LOCK_OUTLINE, 
+                            hide=True,
+                            rx_value=self.signup_controller.password
+                        ),
                         ft.Container(height=20),
-                        input_field("repeat your password", ft.Icons.LOCK_OUTLINE, hide=True),
-                        ft.Container(height=25),
+                        # Confirm password input field with reactive binding
+                        input_field(
+                            "Repeat your password", 
+                            ft.Icons.LOCK_OUTLINE, 
+                            hide=True,
+                            rx_value=self.signup_controller.confirm_password
+                        ),
+                        ft.Container(height=10),
+                        # Error message display
+                        self.error_text,
+                        # Success message display
+                        self.success_text,
+                        ft.Container(height=15),
                         ft.Row(
                             alignment=ft.MainAxisAlignment.CENTER,
                             controls=[
@@ -133,7 +237,7 @@ class SignUpScreen(FletXPage):
                             ]
                         ),
                         ft.Container(height=20),
-                        main_auth_btn("Sign Up"),
+                        main_auth_btn("Sign Up", on_click=self.handle_signup),
                         ft.Container(height=25),
                     ]
                 ),
