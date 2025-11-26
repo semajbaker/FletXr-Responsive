@@ -5,6 +5,7 @@ api/
 storage/
 .vscode/
 .npm/
+.env
 session_data.json
 *.pyo
 *.pyd

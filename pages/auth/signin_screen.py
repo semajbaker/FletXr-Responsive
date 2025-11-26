@@ -47,6 +47,7 @@ class SignInScreen(FletXPage):
         # Set up listener for signin error
         self.signin_controller.signin_error.listen(self._on_error_changed)
     
+
     def _on_error_changed(self):
         """Handle error message changes"""
         if self.signin_controller.signin_error.value:
@@ -56,18 +57,29 @@ class SignInScreen(FletXPage):
             self.error_text.visible = False
         self.error_text.update()
     
-    def handle_signin(self, e):
+    async def handle_signin(self, e):
         """Handle sign in button click"""
         print(f"Sign In clicked!")
         print(f"Email: {self.signin_controller.email.value}")
         print(f"Password: {self.signin_controller.password.value}")
         
-        # Add your sign in logic here
-        if self.signin_controller.email.value and self.signin_controller.password.value:
-            print("Form is valid, proceeding with sign in...")
-            # Call your backend service here
+        # Call the signin method from controller
+        success, message, data = await self.signin_controller.signin()
+        
+        if success:
+            print(f"Sign in successful! Message: {message}")
+            print(f"User data: {data}")
+            
+            # Store the token (you might want to use a secure storage mechanism)
+            if data and 'token' in data:
+                # TODO: Store token securely
+                print(f"Token received: {data['token']}")
+            
+            # Navigate to home or dashboard
+            # navigate("/home", replace=True, clear_history=True)
         else:
-            print("Form validation failed")
+            print(f"Sign in failed: {message}")
+            # Error is already set in the controller and will be displayed
     
     def on_unmount(self):
         """Stop animation when leaving the page"""

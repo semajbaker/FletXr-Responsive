@@ -77,34 +77,36 @@ class SignUpScreen(FletXPage):
             self.success_text.visible = False
             if hasattr(self, 'success_text') and self.success_text.page:
                 self.success_text.update()
-    
-    def handle_signup(self, e):
+
+    async def handle_signup(self, e):
         """Handle sign up button click"""
         print(f"Sign Up clicked!")
+        print(f"Username: {self.signup_controller.username.value}")
+        print(f"Email: {self.signup_controller.email.value}")
         
-        # Validate form one more time
-        self.signup_controller.validate_form()
+        # Call the signup method from controller
+        success, message, data = await self.signup_controller.signup()
         
-        if self.signup_controller.is_valid.value:
-            # Get form data
-            signup_data = self.signup_controller.get_signup_data()
-            print(f"Username: {signup_data['username']}")
-            print(f"Email: {signup_data['email']}")
-            print(f"Password: {signup_data['password']}")
+        if success:
+            print(f"Sign up successful! Message: {message}")
+            print(f"User data: {data}")
             
-            print("Form is valid, proceeding with sign up...")
-            # Call your backend service here
-            # Example:
-            # response = backend_service.signup(signup_data)
-            # if response.success:
-            #     navigate("/signin")
+            # Store the token (you might want to use a secure storage mechanism)
+            if data and 'access_token' in data:
+                # TODO: Store token securely
+                print(f"Access token received: {data['access_token']}")
+                print(f"User info: {data.get('user', {})}")
             
-            # For now, show success and optionally reset form
+            # Optionally reset form
             # self.signup_controller.reset_form()
+            
+            # Navigate to signin or home page
+            await navigate("/signin", replace=True, clear_history=True)
         else:
-            print("Form validation failed")
-            print(f"Error: {self.signup_controller.signup_error.value}")
-    
+            print(f"Sign up failed: {message}")
+            # Error is already set in the controller and will be displayed
+
+
     def on_unmount(self):
         """Stop animation when leaving the page"""
         if self.animation_ctrl:
@@ -202,6 +204,14 @@ class SignUpScreen(FletXPage):
                             ft.Icons.ALTERNATE_EMAIL, 
                             hide=False,
                             rx_value=self.signup_controller.email
+                        ),
+                        ft.Container(height=20),
+                        # Phone number input field with reactive binding
+                        input_field(
+                            "Enter your phone number", 
+                            ft.Icons.PHONE, 
+                            hide=False,
+                            rx_value=self.signup_controller.phone_number
                         ),
                         ft.Container(height=20),
                         # Password input field with reactive binding
