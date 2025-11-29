@@ -52,7 +52,6 @@ services:
     networks:
       loan_management_net:
         ipv4_address: 192.168.0.4
-  
   api:
     image: node:express
     container_name: node_express_api

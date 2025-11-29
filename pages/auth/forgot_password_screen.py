@@ -97,7 +97,7 @@ class ForgotPasswordScreen(FletXPage):
         else:
             print(f"Form validation failed. Error: {self.forgot_password_controller.error.value}")
     
-    def on_unmount(self):
+    def on_destroy(self):
         """Stop animation when leaving the page"""
         if self.animation_ctrl:
             self.animation_ctrl.stop_animation()

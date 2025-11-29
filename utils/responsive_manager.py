@@ -17,13 +17,14 @@ class MediaQuery:
     @classmethod
     def get_controller(cls) -> MediaQueryController:
         """Get the media query controller from FletX dependency injection"""
-        try:
-            return FletX.find('media_query_controller')
-        except:
+        controller = FletX.find(MediaQueryController, tag='media_query_controller')
+        
+        if controller is None:
             # If not found, create and register it
             controller = MediaQueryController()
-            FletX.put(controller, 'media_query_controller')
-            return controller
+            FletX.put(controller, tag='media_query_controller')
+        
+        return controller
     
     @classmethod
     def register(cls, point: str, min_width: int, max_width: int):

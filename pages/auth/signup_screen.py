@@ -8,6 +8,7 @@ from widgets.main_auth_btn import main_auth_btn
 from controllers.animation_controller import AnimationController
 from controllers.auth_controller import SignupController
 from constants.ui_constants import AppColors
+from widgets.auth_divider import auth_divider
 from widgets.auth_action_controlls import auth_action_controlls
 
 class SignUpScreen(FletXPage):
@@ -107,7 +108,7 @@ class SignUpScreen(FletXPage):
             # Error is already set in the controller and will be displayed
 
 
-    def on_unmount(self):
+    def on_destroy(self):
         """Stop animation when leaving the page"""
         if self.animation_ctrl:
             self.animation_ctrl.stop_animation()
@@ -249,6 +250,49 @@ class SignUpScreen(FletXPage):
                         ft.Container(height=20),
                         main_auth_btn("Sign Up", on_click=self.handle_signup),
                         ft.Container(height=25),
+                        auth_divider(),
+                        ft.Container(height=25),
+                        ft.Row(
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            spacing=15,
+                            controls=[
+                                ft.Container(
+                                    width=100,
+                                    height=50,
+                                    content=ft.FloatingActionButton(
+                                        content=ft.Icon(
+                                            ft.Icons.EMAIL, 
+                                            size=20, 
+                                            color=ft.Colors.BLUE_GREY_400
+                                        ),
+                                        width=30,
+                                        height=30,
+                                        bgcolor=ft.Colors.WHITE,
+                                        shape=ft.CircleBorder(),
+                                        elevation=3,
+                                        tooltip="Continue with Google",
+                                    ),
+                                ),
+                                ft.Container(
+                                    width=100,
+                                    height=50,
+                                    content=ft.FloatingActionButton(
+                                        content=ft.Icon(
+                                            ft.Icons.CODE, 
+                                            size=20, 
+                                            color=ft.Colors.BLUE_GREY_400
+                                        ),
+                                        width=30,
+                                        height=30,
+                                        bgcolor=ft.Colors.WHITE,
+                                        shape=ft.CircleBorder(),
+                                        elevation=3,
+                                        tooltip="Continue with Github",
+                                    ),
+                                ),
+                            ]
+                        ),
+                        ft.Container(height=20),
                     ]
                 ),
             ),

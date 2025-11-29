@@ -81,7 +81,7 @@ class SignInScreen(FletXPage):
             print(f"Sign in failed: {message}")
             # Error is already set in the controller and will be displayed
     
-    def on_unmount(self):
+    def on_destroy(self):
         """Stop animation when leaving the page"""
         if self.animation_ctrl:
             self.animation_ctrl.stop_animation()
@@ -246,7 +246,8 @@ class SignInScreen(FletXPage):
                                     ),
                                 ),
                             ]
-                        )
+                        ),
+                        ft.Container(height=20),
                     ]
                 ),
             ),

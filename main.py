@@ -3,6 +3,7 @@ Main application file with responsive system integration.
 
 File: main.py
 """
+import os
 import warnings
 import flet as ft
 from fletx.app import FletXApp
@@ -13,7 +14,7 @@ from pages.auth.forgot_password_screen import ForgotPasswordScreen
 from utils.responsive_manager import MediaQuery
 from fletx.navigation import router_config
     
-def main(page: ft.Page):
+def main():
     mobile_text = RxStr('mobile')
     mobile_min_width = RxStr(0)
     mobile_max_width = RxInt(768)
@@ -23,6 +24,16 @@ def main(page: ft.Page):
     desktop_text = RxStr('desktop')
     desktop_min_width = RxStr(1024)
     desktop_max_width = RxStr(1924)
+
+    async def on_startup(page: ft.Page):
+        print("App is running!")
+        print(os.getenv('FLETX_DEBUG'))
+            # Initialize MediaQuery first
+        MediaQuery.initialize_with_page(page)
+
+    def on_shutdown(page: ft.Page):
+        print("App is closed!")
+        
     # Add your route
     routes = [
         {
@@ -42,9 +53,6 @@ def main(page: ft.Page):
         }
     ]
     router_config.add_routes(routes)
-
-    # Initialize MediaQuery first
-    MediaQuery.initialize_with_page(page)
     
     # Register all breakpoints
     MediaQuery.register(mobile_text.value, mobile_min_width.value, mobile_max_width.value)     
@@ -59,14 +67,16 @@ def main(page: ft.Page):
         title="FletXr Responsive UI",
         initial_route="/signin",
         debug=True,
+        on_startup = on_startup,
+        on_shutdown = on_shutdown
     ).with_theme(
         ft.Theme(color_scheme_seed=ft.Colors.BLUE)
     )
     
     # Run the app
-    app._main(page)
+    app.run_async()
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", message=".*websockets.*", category=DeprecationWarning)
     warnings.filterwarnings("ignore", message=".*ws_handler.*", category=DeprecationWarning)
-    ft.app(target=main)
+    main()
