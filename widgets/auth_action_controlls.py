@@ -3,23 +3,19 @@ from utils.responsive_manager import MediaQuery
 class ResponsiveAuthActionControls(ft.Container):
     """Reactive auth action controls that automatically update when breakpoints change."""
     
-    def __init__(
-        self,
-        primary_action_text: str,
-        primary_action_on_click,
-        show_forgot_password: bool = False,
-        forgot_password_on_click = None
-    ):
-        # Store parameters
+    def __init__(self, primary_action_text: str, primary_action_on_click, 
+                 show_forgot_password: bool = False, forgot_password_on_click = None):
         self.primary_action_text = primary_action_text
         self.primary_action_on_click = primary_action_on_click
         self.show_forgot_password = show_forgot_password
         self.forgot_password_on_click = forgot_password_on_click
         
-        # Get reactive property
         self.container_width_rx = MediaQuery.get_auth_navigation_controls_width_rx()
         
-        # Determine the prefix text based on the action
+        # CRITICAL: Store observer reference for cleanup
+        self._container_width_observer = None
+        
+        # Determine prefix text
         if primary_action_text.lower() == "sign in":
             self.prefix_text = "Already have an account? "
         elif primary_action_text.lower() in ["sign up", "create account"]:
@@ -27,17 +23,13 @@ class ResponsiveAuthActionControls(ft.Container):
         else:
             self.prefix_text = ""
         
-        # ---- LEFT SIDE: Primary action (button + prefix) ----
+        # Create sections
         self.primary_section = ft.Container(
             content=ft.Row(
                 spacing=2,
                 tight=True,
                 controls=[
-                    ft.Text(
-                        self.prefix_text,
-                        size=12,
-                        color=ft.Colors.BLUE_GREY_600,
-                    ),
+                    ft.Text(self.prefix_text, size=12, color=ft.Colors.BLUE_GREY_600),
                     ft.TextButton(
                         text=primary_action_text,
                         on_click=primary_action_on_click,
@@ -51,7 +43,6 @@ class ResponsiveAuthActionControls(ft.Container):
             )
         )
         
-        # ---- RIGHT SIDE: Forgot password or spacer ----
         if show_forgot_password and forgot_password_on_click:
             self.forgot_section = ft.Container(
                 content=ft.TextButton(
@@ -66,20 +57,18 @@ class ResponsiveAuthActionControls(ft.Container):
         else:
             self.forgot_section = ft.Container()
         
-        # Create initial content layout
         self.content_layout = self._create_layout()
         
-        # Initialize the container
         super().__init__(
             width=self.container_width_rx.value,
             padding=ft.padding.symmetric(horizontal=20),
             content=self.content_layout
         )
         
-        # Set up listeners after initialization
-        self.container_width_rx.listen(self._on_container_width_changed)
+        # Store observer reference
+        self._container_width_observer = self.container_width_rx.listen(self._on_container_width_changed)
         
-        # Register breakpoint listeners for layout changes
+        # Register breakpoint listeners
         MediaQuery.on('mobile', self._on_mobile_breakpoint)
         MediaQuery.on('tablet', self._on_desktop_breakpoint)
         MediaQuery.on('desktop', self._on_desktop_breakpoint)
@@ -87,10 +76,10 @@ class ResponsiveAuthActionControls(ft.Container):
     def will_unmount(self):
         """Clean up listeners when widget is unmounted"""
         try:
-            # Remove reactive property listener
-            if hasattr(self.container_width_rx, '_listeners'):
-                if self._on_container_width_changed in self.container_width_rx._listeners:
-                    self.container_width_rx._listeners.dispose(self._on_container_width_changed)
+            # Dispose observer properly
+            if self._container_width_observer:
+                self._container_width_observer.dispose()
+                self._container_width_observer = None
             
             # Remove breakpoint listeners
             MediaQuery.off('mobile', self._on_mobile_breakpoint)
@@ -102,62 +91,42 @@ class ResponsiveAuthActionControls(ft.Container):
             print(f"Error cleaning up ResponsiveAuthActionControls: {e}")
     
     def _create_layout(self):
-        """Create layout based on current breakpoint"""
         current_breakpoint = MediaQuery.get_current_breakpoint()
         print(f"Creating layout for breakpoint: {current_breakpoint}")
         
         if current_breakpoint == 'mobile':
-            # Stack vertically on mobile
             return ft.Column(
                 spacing=10,
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
-                controls=[
-                    self.primary_section,
-                    self.forgot_section
-                ]
+                controls=[self.primary_section, self.forgot_section]
             )
         else:
-            # Horizontal layout for tablet and desktop
             return ft.Row(
                 alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
-                controls=[
-                    self.primary_section,   # LEFT
-                    self.forgot_section     # RIGHT
-                ]
+                controls=[self.primary_section, self.forgot_section]
             )
     
     def _on_mobile_breakpoint(self):
-        """Called when mobile breakpoint becomes active"""
-        print("Auth controls: Mobile breakpoint activated")
         self._update_layout()
     
     def _on_desktop_breakpoint(self):
-        """Called when tablet/desktop breakpoint becomes active"""
-        print("Auth controls: Desktop/Tablet breakpoint activated")
         self._update_layout()
     
     def _update_layout(self):
-        """Update the layout based on current breakpoint"""
         new_layout = self._create_layout()
         self.content = new_layout
         if hasattr(self, 'page') and self.page:
             self.update()
     
     def _on_container_width_changed(self):
-        """Called when container width changes"""
         print(f"Auth controls container width changed to: {self.container_width_rx.value}")
         self.width = self.container_width_rx.value
         if hasattr(self, 'page') and self.page:
             self.update()
 
 
-def auth_action_controlls(
-    primary_action_text: str,
-    primary_action_on_click,
-    show_forgot_password: bool = False,
-    forgot_password_on_click = None
-):
-    """Factory function to create responsive auth action controls."""
+def auth_action_controlls(primary_action_text: str, primary_action_on_click,
+                          show_forgot_password: bool = False, forgot_password_on_click = None):
     return ResponsiveAuthActionControls(
         primary_action_text,
         primary_action_on_click,

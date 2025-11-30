@@ -1,15 +1,15 @@
 import flet as ft
 from fletx.core import FletXPage
-from fletx.navigation import navigate
-from controllers.animation_controller import AnimationController
-from controllers.auth_controller import ForgotPasswordController
+from utils.navigation_helper import safe_navigate
 from utils.animation_manager import AnimationManager
 from constants.ui_constants import AppColors
 from widgets.animated_box import animated_box
 from widgets.input_field import input_field
 from widgets.main_auth_btn import main_auth_btn
 from widgets.auth_action_controlls import auth_action_controlls
+from controllers.auth_controller import ForgotPasswordController
 from utils.responsive_manager import MediaQuery
+
 class ForgotPasswordScreen(FletXPage):
     def __init__(self):
         super().__init__()
@@ -17,8 +17,7 @@ class ForgotPasswordScreen(FletXPage):
         self.box2 = animated_box(ft.Colors.CYAN_400, ft.Colors.TEAL_300, 0.8)
         self.box3 = animated_box(ft.Colors.AMBER_400, ft.Colors.ORANGE_300, 1.2)
         self.box4 = animated_box(ft.Colors.GREEN_400, ft.Colors.LIGHT_GREEN_300, 0.9)
-        self.animation_ctrl = AnimationController()
-        self.animation_manager = None
+        self.widgets_to_cleanup = []
         
         # Initialize ForgotPasswordController
         self.forgot_password_controller = ForgotPasswordController()
@@ -44,19 +43,59 @@ class ForgotPasswordScreen(FletXPage):
 
     def on_init(self):
         """Initialize animation and controller after page is ready"""
-        # Create animation manager with page reference and controller
-        self.animation_manager = AnimationManager(self.page, self.animation_ctrl)
+        print("ForgotPasswordScreen: on_init called")
+        
+        # Initialize AnimationManager with page reference (static class)
+        AnimationManager.initialize_with_page(self.page)
+        
+        # Initialize MediaQuery with page
+        MediaQuery.initialize_with_page(self.page)
         
         # Set the boxes to animate
-        self.animation_manager.set_boxes(self.box1, self.box2, self.box3, self.box4)
+        AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
         
-        # Start animation using controller
-        self.animation_ctrl.start_animation()
+        # Start animation
+        AnimationManager.start_animation()
         
         # Set up listeners for error and success messages
         self.forgot_password_controller.error.listen(self._on_error_changed)
         self.forgot_password_controller.success.listen(self._on_success_changed)
-        MediaQuery.debug_listener_count()
+        
+        # Register breakpoints
+        MediaQuery.register("mobile", 0, 768)
+        MediaQuery.register("tablet", 768, 1024)
+        MediaQuery.register("desktop", 1024, float('inf'))
+        
+        # Complete registration to trigger initial check
+        MediaQuery.complete_registration()
+        MediaQuery.debug_all_listeners()
+    
+    def will_unmount(self):
+        """Cleanup when page is about to be unmounted"""
+        print("ForgotPasswordScreen: will_unmount called - cleaning up resources")
+        
+        # Clean up all widgets
+        for widget in self.widgets_to_cleanup:
+            if hasattr(widget, 'will_unmount'):
+                try:
+                    widget.will_unmount()
+                except Exception as e:
+                    print(f"Error cleaning up widget {widget}: {e}")
+        
+        # Clear the list
+        self.widgets_to_cleanup.clear()
+        
+        # Stop animation using static class method
+        AnimationManager.stop_animation()
+        
+        # Clean up MediaQuery
+        MediaQuery.reset_all()
+        
+        print("ForgotPasswordScreen: cleanup completed")
+    
+    def on_destroy(self):
+        """Cleanup on page destroy"""
+        print("ForgotPasswordScreen: on_destroy called")
         
     def _on_error_changed(self):
         """Handle error message changes"""
@@ -101,13 +140,37 @@ class ForgotPasswordScreen(FletXPage):
     def go_to_signin(self, e):
         """Navigate to signin screen"""
         print("Navigating to signin...")
-        # Stop animation before navigating using controller
-        if self.animation_ctrl:
-            self.animation_ctrl.stop_animation()
-        MediaQuery.reset_all()
-        navigate("/signin")
+        # Use safe_navigate to ensure cleanup happens
+        safe_navigate("/signin", current_page=self)
 
     def build(self):
+        # Clear any previous widgets
+        self.widgets_to_cleanup.clear()
+        
+        # Create widgets
+        email_field = input_field(
+            "Enter your email address", 
+            ft.Icons.ALTERNATE_EMAIL, 
+            hide=False,
+            rx_value=self.forgot_password_controller.email
+        )
+        
+        auth_controls = auth_action_controlls(
+            primary_action_text="Sign In",
+            primary_action_on_click=self.go_to_signin,
+            show_forgot_password=False,
+        )
+        
+        main_btn = main_auth_btn(
+            "Send Reset Link", 
+            on_click=self.handle_send_reset_link
+        )
+        
+        # Store widget references for cleanup
+        self.widgets_to_cleanup.append(email_field)
+        self.widgets_to_cleanup.append(auth_controls)
+        self.widgets_to_cleanup.append(main_btn)
+        
         return ft.Container(
             bgcolor=AppColors.LIGHT['background'],
             margin=ft.margin.all(0),
@@ -179,12 +242,7 @@ class ForgotPasswordScreen(FletXPage):
                         ),
                         ft.Container(height=30),
                         # Email input field with reactive binding
-                        input_field(
-                            "Enter your email address", 
-                            ft.Icons.ALTERNATE_EMAIL, 
-                            hide=False,
-                            rx_value=self.forgot_password_controller.email
-                        ),
+                        email_field,
                         ft.Container(height=15),
                         # Error message display
                         self.error_text,
@@ -194,18 +252,11 @@ class ForgotPasswordScreen(FletXPage):
                         ft.Row(
                             alignment=ft.MainAxisAlignment.CENTER,
                             controls=[
-                                auth_action_controlls(
-                                    primary_action_text="Sign In",
-                                    primary_action_on_click=self.go_to_signin,
-                                    show_forgot_password=False,
-                                )
+                                auth_controls
                             ]
                         ),
                         ft.Container(height=30),
-                        main_auth_btn(
-                            "Send Reset Link", 
-                            on_click=self.handle_send_reset_link
-                        ),
+                        main_btn,
                         ft.Container(height=25),
                     ]
                 ),

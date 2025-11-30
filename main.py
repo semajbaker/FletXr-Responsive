@@ -7,7 +7,6 @@ import os
 import warnings
 import flet as ft
 from fletx.app import FletXApp
-from fletx.core import RxInt, RxStr
 from pages.auth.signin_screen import SignInScreen
 from pages.auth.signup_screen import SignUpScreen
 from pages.auth.forgot_password_screen import ForgotPasswordScreen
@@ -15,10 +14,10 @@ from utils.responsive_manager import MediaQuery
 from fletx.navigation import router_config
     
 def main():
-    def on_startup(page: ft.Page):
+    async def on_startup(page: ft.Page):
         print("App is running!")
         print(os.getenv('FLETX_DEBUG'))
-
+        
     def on_shutdown(page: ft.Page):
         print("App is closed!")
         # Clean up MediaQuery on shutdown
@@ -53,7 +52,7 @@ def main():
     )
     
     # Run the app
-    app.run()
+    app.run_async()
 
 if __name__ == "__main__":
     warnings.filterwarnings("ignore", message=".*websockets.*", category=DeprecationWarning)
