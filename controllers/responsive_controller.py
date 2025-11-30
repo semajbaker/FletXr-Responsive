@@ -16,6 +16,7 @@ class MediaQueryController(FletXController):
     _shared_width = RxInt(1912)
     _shared_current_breakpoint = RxStr("desktop")
     _shared_registration_complete = False
+    _shared_page = None
     
     # Add reactive properties for UI dimensions
     _shared_container_width = RxInt(SharedContainerSizes.DESKTOP_WIDTH)
@@ -59,29 +60,42 @@ class MediaQueryController(FletXController):
     @_registration_complete.setter
     def _registration_complete(self, value):
         MediaQueryController._shared_registration_complete = value
+
+    @property
+    def _page(self):
+        return MediaQueryController._shared_page
     
+    @_page.setter
+    def _page(self, value):
+        MediaQueryController._shared_page = value
+
     def initialize_with_page(self, page: ft.Page):
         """Initialize with page reference - called from page's on_init"""
-        if self._initialized:
-            return
-            
+        # Store page reference
+        self._page = page
+        
+        # Always set/update the resize handler
         page.on_resized = self._handle_resize
         
-        # Set initial width if available - checks are prevented by _registration_complete flag
+        # Set initial width if available
         if hasattr(page, 'width') and page.width:
             self.window_width.value = page.width
+            print(f"MediaQuery initialized with page width: {page.width}")
         
+        # Mark as initialized
         self._initialized = True
+        print(f"MediaQuery page initialization complete. Handler attached: {page.on_resized is not None}")
+    
+    def _handle_resize(self, event: ft.WindowResizeEvent):
+        """Handle window resize events from Flet"""
+        print(f"Resize event detected: {event.width}x{event.height}")
+        self.window_width.value = event.width
     
     def complete_registration(self):
         """Call this after all breakpoints are registered to trigger initial check"""
         self._registration_complete = True
         if self._initialized:
             self._check_for_updates(self.window_width.value)
-    
-    def _handle_resize(self, event: ft.WindowResizeEvent):
-        """Handle window resize events from Flet"""
-        self.window_width.value = event.width
     
     def _on_width_changed(self):
         """React to width changes and update current breakpoint - only after registration is complete"""
@@ -183,3 +197,239 @@ class MediaQueryController(FletXController):
                 new_list.remove(callback_function)
                 current_listeners[point] = RxList(new_list)
                 self._listeners.value = current_listeners
+                
+    def get_listener_count(self):
+        """Get the total number of registered breakpoint listeners (for debugging)"""
+        total = 0
+        for point, listener_list in self._listeners.value.items():
+            count = len(listener_list.value) if hasattr(listener_list, 'value') else len(listener_list)
+            total += count
+            print(f"  {point}: {count} listeners")
+        return total
+
+    def get_all_listener_counts(self):
+        """Get detailed listener counts for all reactive properties"""
+        print("\n" + "="*60)
+        print("COMPLETE MEDIAQUERY LISTENER REPORT")
+        print("="*60)
+        
+        # 1. Breakpoint listeners
+        print("\n1. BREAKPOINT LISTENERS:")
+        breakpoint_total = 0
+        for point, listener_list in self._listeners.value.items():
+            count = len(listener_list.value) if hasattr(listener_list, 'value') else len(listener_list)
+            breakpoint_total += count
+            print(f"   {point}: {count} listeners")
+        print(f"   Subtotal: {breakpoint_total}")
+        
+        # 2. Reactive property listeners (UI dimensions)
+        print("\n2. REACTIVE PROPERTY LISTENERS:")
+        
+        # Check window_width listeners
+        width_listeners = 0
+        if hasattr(self.window_width, '_listeners'):
+            width_listeners = len(self.window_width._listeners)
+        print(f"   window_width: {width_listeners} listeners")
+        
+        # Check shared_container_width listeners
+        container_listeners = 0
+        if hasattr(self.shared_container_width, '_listeners'):
+            container_listeners = len(self.shared_container_width._listeners)
+        print(f"   shared_container_width: {container_listeners} listeners")
+        
+        # Check shared_text_field_width listeners
+        textfield_listeners = 0
+        if hasattr(self.shared_text_field_width, '_listeners'):
+            textfield_listeners = len(self.shared_text_field_width._listeners)
+        print(f"   shared_text_field_width: {textfield_listeners} listeners")
+        
+        # Check auth_divider_width listeners
+        divider_listeners = 0
+        if hasattr(self.auth_divider_width, '_listeners'):
+            divider_listeners = len(self.auth_divider_width._listeners)
+        print(f"   auth_divider_width: {divider_listeners} listeners")
+        
+        # Check auth_navigation_controls_width listeners
+        nav_listeners = 0
+        if hasattr(self.auth_navigation_controls_width, '_listeners'):
+            nav_listeners = len(self.auth_navigation_controls_width._listeners)
+        print(f"   auth_navigation_controls_width: {nav_listeners} listeners")
+        
+        reactive_total = (width_listeners + container_listeners + textfield_listeners + 
+                          divider_listeners + nav_listeners)
+        print(f"   Subtotal: {reactive_total}")
+        
+        # 3. Current breakpoint listener
+        print("\n3. CURRENT BREAKPOINT LISTENERS:")
+        current_bp_listeners = 0
+        if hasattr(self.current_breakpoint, '_listeners'):
+            current_bp_listeners = len(self.current_breakpoint._listeners)
+        print(f"   current_breakpoint: {current_bp_listeners} listeners")
+        
+        # Grand total
+        grand_total = breakpoint_total + reactive_total + current_bp_listeners
+        print("\n" + "-"*60)
+        print(f"GRAND TOTAL: {grand_total} listeners")
+        print("="*60 + "\n")
+        
+        return {
+            'breakpoint_listeners': breakpoint_total,
+            'reactive_property_listeners': reactive_total,
+            'current_breakpoint_listeners': current_bp_listeners,
+            'grand_total': grand_total
+        }
+
+    def debug_listener_details(self):
+        """Show which specific functions are registered as listeners"""
+        print("\n" + "="*60)
+        print("DETAILED LISTENER INSPECTION")
+        print("="*60)
+        
+        # Breakpoint listeners with function names
+        print("\n1. BREAKPOINT LISTENERS (with function names):")
+        for point, listener_list in self._listeners.value.items():
+            listeners = listener_list.value if hasattr(listener_list, 'value') else listener_list
+            print(f"\n   {point} ({len(listeners)} listeners):")
+            for i, func in enumerate(listeners, 1):
+                func_name = getattr(func, '__name__', str(func))
+                func_class = func.__self__.__class__.__name__ if hasattr(func, '__self__') else 'Unknown'
+                print(f"      {i}. {func_class}.{func_name}")
+        
+        # Reactive property listeners
+        print("\n2. REACTIVE PROPERTY LISTENERS (with function names):")
+        
+        properties = {
+            'window_width': self.window_width,
+            'shared_container_width': self.shared_container_width,
+            'shared_text_field_width': self.shared_text_field_width,
+            'auth_divider_width': self.auth_divider_width,
+            'auth_navigation_controls_width': self.auth_navigation_controls_width,
+            'current_breakpoint': self.current_breakpoint
+        }
+        
+        for prop_name, prop in properties.items():
+            if hasattr(prop, '_listeners'):
+                listeners = list(prop._listeners)
+                print(f"\n   {prop_name} ({len(listeners)} listeners):")
+                for i, func in enumerate(listeners, 1):
+                    func_name = getattr(func, '__name__', str(func))
+                    func_class = func.__self__.__class__.__name__ if hasattr(func, '__self__') else 'Unknown'
+                    print(f"      {i}. {func_class}.{func_name}")
+        
+        print("\n" + "="*60 + "\n")
+
+    def dispose(self):
+        """Override FletXController's dispose to handle RxList properly"""
+        try:
+            # Clean up our custom resources first
+            self.cleanup()
+            
+            # Safely handle _children attribute
+            if hasattr(self, '_children'):
+                try:
+                    # Try to get children as a list
+                    if hasattr(self._children, 'value'):
+                        children = list(self._children.value) if self._children.value else []
+                    elif hasattr(self._children, '__iter__'):
+                        children = list(self._children)
+                    else:
+                        children = []
+                    
+                    # Dispose all children
+                    for child in children:
+                        try:
+                            if hasattr(child, 'dispose'):
+                                child.dispose()
+                        except Exception as child_error:
+                            print(f"Error disposing child: {child_error}")
+                    
+                    # Clear children collection
+                    if hasattr(self._children, 'value'):
+                        self._children.value = []
+                    elif hasattr(self._children, 'clear'):
+                        self._children.clear()
+                        
+                except Exception as children_error:
+                    print(f"Error handling children during disposal: {children_error}")
+            
+            print("MediaQueryController disposed successfully")
+            
+        except Exception as e:
+            print(f"Error during MediaQueryController disposal: {e}")
+
+    def cleanup(self):
+        """Clean up controller resources and reset state"""
+        try:
+            # DON'T clear the page reference here - it will be updated on next init
+            # Just remove the resize handler from the old page
+            if hasattr(self, '_page') and self._page:
+                old_page = self._page
+                if hasattr(old_page, 'on_resized'):
+                    old_page.on_resized = None
+                    print("Removed resize handler from old page")
+            
+            # Stop listening to width changes
+            if hasattr(self, 'window_width') and hasattr(self.window_width, '_listeners'):
+                # Clear width listeners
+                if hasattr(self.window_width._listeners, 'clear'):
+                    self.window_width._listeners.clear()
+            
+            # Clear all breakpoint listeners from the instance view
+            if hasattr(self, '_listeners') and hasattr(self._listeners, 'value'):
+                for point in list(self._listeners.value.keys()):
+                    listener_list = self._listeners.value.get(point)
+                    if listener_list and hasattr(listener_list, 'value'):
+                        listener_list.value = []
+            
+            # Reset instance flags
+            self._registration_complete = False
+            self._initialized = False
+            
+            print("MediaQueryController cleanup completed")
+            
+        except Exception as e:
+            print(f"Error during cleanup: {e}")
+
+    @classmethod
+    def reset_shared_state(cls):
+        """Reset all shared class-level state - use when completely disposing"""
+        try:
+            # Clear all listeners from shared state
+            for point in list(cls._shared_listeners.value.keys()):
+                listener_list = cls._shared_listeners.value.get(point)
+                if listener_list and hasattr(listener_list, 'value'):
+                    listener_list.value = []
+            
+            # Clear reactive property listeners
+            for prop in [cls._shared_container_width, cls._shared_text_field_width, 
+                        cls._auth_divider_width, cls._auth_navigation_controls_width]:
+                if hasattr(prop, '_listeners') and hasattr(prop._listeners, 'clear'):
+                    prop._listeners.clear()
+            
+            # Reset shared dictionaries
+            cls._shared_breakpoints.value = {}
+            cls._shared_listeners.value = {}
+            
+            # Reset shared flags
+            cls._shared_initialized = False
+            cls._shared_registration_complete = False
+            
+            # Clear page reference
+            cls._shared_page = None
+            
+            # Reset to default values
+            cls._shared_width.value = 1912
+            cls._shared_current_breakpoint.value = "desktop"
+            cls._shared_container_width.value = SharedContainerSizes.DESKTOP_WIDTH
+            cls._shared_text_field_width.value = InputFieldSizes.DESKTOP_WIDTH
+            cls._auth_divider_width.value = AuthDividerSizes.DESKTOP_WIDTH
+            cls._auth_navigation_controls_width.value = AuthNavigationControlSizes.DESKTOP_WIDTH
+            
+            # Reset listener initialization flag
+            if hasattr(cls, '_listeners_initialized'):
+                delattr(cls, '_listeners_initialized')
+            
+            print("Shared MediaQueryController state reset")
+            
+        except Exception as e:
+            print(f"Error resetting shared state: {e}")

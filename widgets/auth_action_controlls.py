@@ -1,7 +1,5 @@
 import flet as ft
 from utils.responsive_manager import MediaQuery
-
-
 class ResponsiveAuthActionControls(ft.Container):
     """Reactive auth action controls that automatically update when breakpoints change."""
     
@@ -85,6 +83,23 @@ class ResponsiveAuthActionControls(ft.Container):
         MediaQuery.on('mobile', self._on_mobile_breakpoint)
         MediaQuery.on('tablet', self._on_desktop_breakpoint)
         MediaQuery.on('desktop', self._on_desktop_breakpoint)
+    
+    def will_unmount(self):
+        """Clean up listeners when widget is unmounted"""
+        try:
+            # Remove reactive property listener
+            if hasattr(self.container_width_rx, '_listeners'):
+                if self._on_container_width_changed in self.container_width_rx._listeners:
+                    self.container_width_rx._listeners.dispose(self._on_container_width_changed)
+            
+            # Remove breakpoint listeners
+            MediaQuery.off('mobile', self._on_mobile_breakpoint)
+            MediaQuery.off('tablet', self._on_desktop_breakpoint)
+            MediaQuery.off('desktop', self._on_desktop_breakpoint)
+            
+            print(f"ResponsiveAuthActionControls cleaned up")
+        except Exception as e:
+            print(f"Error cleaning up ResponsiveAuthActionControls: {e}")
     
     def _create_layout(self):
         """Create layout based on current breakpoint"""

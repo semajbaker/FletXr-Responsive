@@ -1,13 +1,13 @@
 import flet as ft
 from fletx.core import FletXPage
-from fletx.navigation import navigate
+from utils.navigation_helper import safe_navigate
 from widgets.animated_box import animated_box
 from utils.animation_manager import AnimationManager
 from widgets.input_field import input_field
 from widgets.main_auth_btn import main_auth_btn
-from controllers.animation_controller import AnimationController
 from controllers.auth_controller import SignupController
 from constants.ui_constants import AppColors
+from utils.responsive_manager import MediaQuery
 from widgets.auth_divider import auth_divider
 from widgets.auth_action_controlls import auth_action_controlls
 
@@ -18,9 +18,7 @@ class SignUpScreen(FletXPage):
         self.box2 = animated_box(ft.Colors.CYAN_400, ft.Colors.TEAL_300, 0.8)
         self.box3 = animated_box(ft.Colors.AMBER_400, ft.Colors.ORANGE_300, 1.2)
         self.box4 = animated_box(ft.Colors.GREEN_400, ft.Colors.LIGHT_GREEN_300, 0.9)
-        self.animation_ctrl = AnimationController()
-        self.animation_manager = None
-        
+        self.widgets_to_cleanup = []
         # Initialize SignupController
         self.signup_controller = SignupController()
         
@@ -44,19 +42,60 @@ class SignUpScreen(FletXPage):
         
     def on_init(self):
         """Initialize animation and controller after page is ready"""
-        # Create animation manager with page reference and controller
-        self.animation_manager = AnimationManager(self.page, self.animation_ctrl)
+        print("SignUpScreen: on_init called")
+        
+        # Initialize AnimationManager with page reference (static class)
+        AnimationManager.initialize_with_page(self.page)
+        
+        # Initialize MediaQuery with page
+        MediaQuery.initialize_with_page(self.page)
         
         # Set the boxes to animate
-        self.animation_manager.set_boxes(self.box1, self.box2, self.box3, self.box4)
+        AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
         
         # Start animation using controller
-        self.animation_ctrl.start_animation()
+        AnimationManager.start_animation()
         
         # Set up listener for signup error
         self.signup_controller.signup_error.listen(self._on_error_changed)
-        self.signup_controller.is_valid.listen(self._on_validation_changed)
-    
+        
+        # Register breakpoints
+        MediaQuery.register("mobile", 0, 768)
+        MediaQuery.register("tablet", 768, 1024)
+        MediaQuery.register("desktop", 1024, float('inf'))
+        
+        # Register listeners (if you need page-specific behavior)
+        # MediaQuery.on("mobile", self._on_mobile)
+        # MediaQuery.on("tablet", self._on_tablet)
+        # MediaQuery.on("desktop", self._on_desktop)
+        
+        # Complete registration to trigger initial check
+        MediaQuery.complete_registration()
+        MediaQuery.debug_all_listeners()
+
+    def will_unmount(self):
+        """Cleanup when page is about to be unmounted"""
+        print("SignUpScreen: will_unmount called - cleaning up resources")
+        for widget in self.widgets_to_cleanup:
+            if hasattr(widget, 'will_unmount'):
+                try:
+                    widget.will_unmount()
+                except Exception as e:
+                    print(f"Error cleaning up widget {widget}: {e}")
+        # Clear the list
+        self.widgets_to_cleanup.clear()        
+        # Stop animation using static class method
+        AnimationManager.stop_animation()
+        
+        # Clean up MediaQuery
+        MediaQuery.reset_all()
+        
+        print("SignUpScreen: cleanup completed")
+        
+    def on_destroy(self):
+        """Cleanup on page destroy"""
+        print("SignUpScreen: on_destroy called")
+
     def _on_error_changed(self):
         """Handle error message changes"""
         if self.signup_controller.signup_error.value:
@@ -101,27 +140,67 @@ class SignUpScreen(FletXPage):
             # Optionally reset form
             # self.signup_controller.reset_form()
             
-            # Navigate to signin or home page
-            await navigate("/signin", replace=True, clear_history=True)
+            # Navigate to signin or home page with safe_navigate
+            safe_navigate("/signin", current_page=self, replace=True, clear_history=True)
         else:
             print(f"Sign up failed: {message}")
             # Error is already set in the controller and will be displayed
-
-
-    def on_destroy(self):
-        """Stop animation when leaving the page"""
-        if self.animation_ctrl:
-            self.animation_ctrl.stop_animation()
         
     def go_to_signin(self, e):
         """Navigate to signin screen"""
         print("Navigating to signin...")
-        # Stop animation before navigating using controller
-        if self.animation_ctrl:
-            self.animation_ctrl.stop_animation()
-        navigate("/signin", replace=True, clear_history=True)
+        # Use safe_navigate to ensure cleanup happens
+        safe_navigate("/signin", current_page=self)
 
     def build(self):
+        username_field = input_field(
+            "Enter your email address", 
+            ft.Icons.VERIFIED_USER_OUTLINED, 
+            hide=False,
+            rx_value=self.signup_controller.username
+        )
+        email_field = input_field(
+            "Enter your email address", 
+            ft.Icons.ALTERNATE_EMAIL, 
+            hide=False,
+            rx_value=self.signup_controller.email
+        )
+        phonenumber_field = input_field(
+            "Enter your phone number", 
+            ft.Icons.PHONE, 
+            hide=False,
+            rx_value=self.signup_controller.phone_number
+        )
+        password_field = input_field(
+            "Enter your password", 
+            ft.Icons.LOCK_OUTLINE, 
+            hide=True,
+            rx_value=self.signup_controller.password
+        )
+        repeat_password_field = input_field(
+            "Repeat your password", 
+            ft.Icons.LOCK_OUTLINE, 
+            hide=True,
+            rx_value=self.signup_controller.confirm_password
+        )
+        auth_controls = auth_action_controlls(
+            primary_action_text="Sign In",
+            primary_action_on_click=self.go_to_signin,
+            show_forgot_password=False,
+            forgot_password_on_click=None
+        )
+        main_btn = main_auth_btn("Sign Up", on_click=self.handle_signup)
+        divider = auth_divider()
+
+        self.widgets_to_cleanup.append(username_field)
+        self.widgets_to_cleanup.append(email_field)
+        self.widgets_to_cleanup.append(phonenumber_field)
+        self.widgets_to_cleanup.append(password_field)
+        self.widgets_to_cleanup.append(repeat_password_field)
+        self.widgets_to_cleanup.append(auth_controls)
+        self.widgets_to_cleanup.append(main_btn)
+        self.widgets_to_cleanup.append(divider)
+        
         return ft.Container(
             bgcolor=AppColors.LIGHT['background'],
             margin=ft.margin.all(0),
@@ -192,44 +271,19 @@ class SignUpScreen(FletXPage):
                         ),
                         ft.Container(height=25),
                         # Username input field with reactive binding
-                        input_field(
-                            "Enter your username", 
-                            ft.Icons.VERIFIED_USER_OUTLINED, 
-                            hide=False,
-                            rx_value=self.signup_controller.username
-                        ),
+                        username_field,
                         ft.Container(height=20),
                         # Email input field with reactive binding
-                        input_field(
-                            "Enter your email address", 
-                            ft.Icons.ALTERNATE_EMAIL, 
-                            hide=False,
-                            rx_value=self.signup_controller.email
-                        ),
+                        email_field,
                         ft.Container(height=20),
                         # Phone number input field with reactive binding
-                        input_field(
-                            "Enter your phone number", 
-                            ft.Icons.PHONE, 
-                            hide=False,
-                            rx_value=self.signup_controller.phone_number
-                        ),
+                        phonenumber_field,
                         ft.Container(height=20),
                         # Password input field with reactive binding
-                        input_field(
-                            "Enter your password", 
-                            ft.Icons.LOCK_OUTLINE, 
-                            hide=True,
-                            rx_value=self.signup_controller.password
-                        ),
+                        password_field,
                         ft.Container(height=20),
                         # Confirm password input field with reactive binding
-                        input_field(
-                            "Repeat your password", 
-                            ft.Icons.LOCK_OUTLINE, 
-                            hide=True,
-                            rx_value=self.signup_controller.confirm_password
-                        ),
+                        repeat_password_field,
                         ft.Container(height=10),
                         # Error message display
                         self.error_text,
@@ -239,18 +293,13 @@ class SignUpScreen(FletXPage):
                         ft.Row(
                             alignment=ft.MainAxisAlignment.CENTER,
                             controls=[
-                                auth_action_controlls(
-                                    primary_action_text="Sign In",
-                                    primary_action_on_click=self.go_to_signin,
-                                    show_forgot_password=False,
-                                    forgot_password_on_click=None
-                                )
+                                auth_controls
                             ]
                         ),
                         ft.Container(height=20),
-                        main_auth_btn("Sign Up", on_click=self.handle_signup),
+                        main_btn,
                         ft.Container(height=25),
-                        auth_divider(),
+                        divider,
                         ft.Container(height=25),
                         ft.Row(
                             alignment=ft.MainAxisAlignment.CENTER,

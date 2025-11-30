@@ -9,7 +9,7 @@ from widgets.animated_box import animated_box
 from widgets.input_field import input_field
 from widgets.main_auth_btn import main_auth_btn
 from widgets.auth_action_controlls import auth_action_controlls
-
+from utils.responsive_manager import MediaQuery
 class ForgotPasswordScreen(FletXPage):
     def __init__(self):
         super().__init__()
@@ -56,7 +56,8 @@ class ForgotPasswordScreen(FletXPage):
         # Set up listeners for error and success messages
         self.forgot_password_controller.error.listen(self._on_error_changed)
         self.forgot_password_controller.success.listen(self._on_success_changed)
-    
+        MediaQuery.debug_listener_count()
+        
     def _on_error_changed(self):
         """Handle error message changes"""
         if self.forgot_password_controller.error.value:
@@ -96,11 +97,6 @@ class ForgotPasswordScreen(FletXPage):
                 # You can implement a timer here if needed
         else:
             print(f"Form validation failed. Error: {self.forgot_password_controller.error.value}")
-    
-    def on_destroy(self):
-        """Stop animation when leaving the page"""
-        if self.animation_ctrl:
-            self.animation_ctrl.stop_animation()
 
     def go_to_signin(self, e):
         """Navigate to signin screen"""
@@ -108,7 +104,8 @@ class ForgotPasswordScreen(FletXPage):
         # Stop animation before navigating using controller
         if self.animation_ctrl:
             self.animation_ctrl.stop_animation()
-        navigate("/signin", replace=True, clear_history=True)
+        MediaQuery.reset_all()
+        navigate("/signin")
 
     def build(self):
         return ft.Container(

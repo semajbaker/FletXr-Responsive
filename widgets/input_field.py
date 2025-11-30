@@ -66,6 +66,26 @@ class ResponsiveInputField(ft.Container):
         if self.rx_value:
             self.rx_value.listen(self._on_rx_value_changed)
     
+    def will_unmount(self):
+        """Clean up listeners when widget is unmounted"""
+        try:
+            # Remove listeners from reactive properties
+            if hasattr(self.container_width_rx, '_listeners'):
+                if self._on_container_width_changed in self.container_width_rx._listeners:
+                    self.container_width_rx._listeners.dispose(self._on_container_width_changed)
+            
+            if hasattr(self.field_width_rx, '_listeners'):
+                if self._on_field_width_changed in self.field_width_rx._listeners:
+                    self.field_width_rx._listeners.dispose(self._on_field_width_changed)
+            
+            if self.rx_value and hasattr(self.rx_value, '_listeners'):
+                if self._on_rx_value_changed in self.rx_value._listeners:
+                    self.rx_value._listeners.dispose(self._on_rx_value_changed)
+            
+            print(f"ResponsiveInputField cleaned up")
+        except Exception as e:
+            print(f"Error cleaning up ResponsiveInputField: {e}")
+    
     def _handle_text_change(self, e):
         """Handle text field changes and update reactive value"""
         if self.rx_value:

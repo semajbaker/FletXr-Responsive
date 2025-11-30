@@ -41,6 +41,16 @@ class ResponsiveAuthDivider(ft.Row):
         # Set up listener after initialization
         self.auth_divider_width_rx.listen(self._on_container_width_changed)
     
+    def will_unmount(self):
+        """Clean up listeners when widget is unmounted"""
+        try:
+            if hasattr(self.auth_divider_width_rx, '_listeners'):
+                if self._on_container_width_changed in self.auth_divider_width_rx._listeners:
+                    self.auth_divider_width_rx._listeners.dispose(self._on_container_width_changed)
+            print(f"ResponsiveAuthDivider cleaned up")
+        except Exception as e:
+            print(f"Error cleaning up ResponsiveAuthDivider: {e}")
+    
     def _on_container_width_changed(self):
         """Called when container width changes"""
         print(f"Auth divider width changed to: {self.auth_divider_width_rx.value}")

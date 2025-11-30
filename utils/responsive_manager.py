@@ -27,6 +27,48 @@ class MediaQuery:
         return controller
     
     @classmethod
+    def dispose_controller(cls):
+        """Dispose the media query controller and clean up resources"""
+        controller = FletX.find(MediaQueryController, tag='media_query_controller')
+        
+        if controller is not None:
+            # Clean up the controller instance
+            controller.cleanup()
+            
+            # Remove from FletX dependency injection
+            try:
+                from fletx.core.di import DI
+                tag = 'media_query_controller'
+                if MediaQueryController in DI._instances:
+                    if tag in DI._instances[MediaQueryController]:
+                        # Call dispose manually to trigger our custom disposal
+                        if hasattr(controller, 'dispose'):
+                            controller.dispose()
+                        # Remove from DI
+                        del DI._instances[MediaQueryController][tag]
+                        print("MediaQueryController removed from DI")
+            except Exception as e:
+                print(f"Error removing controller from DI: {e}")
+        
+        return controller
+
+    @classmethod
+    def reset_all(cls):
+        """Complete reset - dispose controller and reset shared state"""
+        # First dispose the current controller
+        cls.dispose_controller()
+        
+        # Then reset all shared state
+        MediaQueryController.reset_shared_state()
+        
+        print("MediaQuery system completely reset")
+
+    @classmethod
+    def cleanup(cls):
+        """Full cleanup including shared state reset"""
+        cls.reset_all()
+    
+    @classmethod
     def register(cls, point: str, min_width: int, max_width: int):
         """Register a breakpoint"""
         controller = cls.get_controller()
@@ -91,3 +133,24 @@ class MediaQuery:
         """Call after all breakpoints and listeners are registered to start responsive checking"""
         controller = cls.get_controller()
         controller.complete_registration()
+    
+    @classmethod
+    def debug_listener_count(cls):
+        """Print current breakpoint listener counts for debugging"""
+        controller = cls.get_controller()
+        print("=== MediaQuery Listener Stats ===")
+        total = controller.get_listener_count()
+        print(f"Total listeners: {total}")
+        print("=================================")
+
+    @classmethod
+    def debug_all_listeners(cls):
+        """Print complete listener report including all reactive properties"""
+        controller = cls.get_controller()
+        return controller.get_all_listener_counts()
+
+    @classmethod
+    def debug_listener_details(cls):
+        """Print detailed listener information with function names"""
+        controller = cls.get_controller()
+        controller.debug_listener_details()

@@ -33,6 +33,16 @@ class ResponsiveMainAuthBtn(ft.Container):
         )
         self.container_width_rx.listen(self._on_container_width_changed)
     
+    def will_unmount(self):
+        """Clean up listeners when widget is unmounted"""
+        try:
+            if hasattr(self.container_width_rx, '_listeners'):
+                if self._on_container_width_changed in self.container_width_rx._listeners:
+                    self.container_width_rx._listeners.dispose(self._on_container_width_changed)
+            print(f"ResponsiveMainAuthBtn cleaned up")
+        except Exception as e:
+            print(f"Error cleaning up ResponsiveMainAuthBtn: {e}")
+    
     def _on_container_width_changed(self):
         """Called when container width changes"""
         print(f"Main auth btn Container width changed to: {self.container_width_rx.value}")
