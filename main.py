@@ -16,7 +16,6 @@ from fletx.navigation import router_config
 def main():
     async def on_startup(page: ft.Page):
         print("App is running!")
-        print(os.getenv('FLETX_DEBUG'))
         MediaQuery.initialize_with_page(page)
         MediaQuery.register("mobile", 0, 768)
         MediaQuery.register("tablet", 768, 1024)

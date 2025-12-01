@@ -48,28 +48,17 @@ class ForgotPasswordScreen(FletXPage):
         # Initialize AnimationManager with page reference (static class)
         AnimationManager.initialize_with_page(self.page)
         
-        # Initialize MediaQuery with page
-        MediaQuery.initialize_with_page(self.page)
-        
         # Set the boxes to animate
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
         
         # Start animation
         AnimationManager.start_animation()
-        
+        MediaQuery.update_page_reference(self.page)
+        MediaQuery.debug_all_listeners()
         # Set up listeners for error and success messages
         self.forgot_password_controller.error.listen(self._on_error_changed)
         self.forgot_password_controller.success.listen(self._on_success_changed)
         
-        # Register breakpoints
-        MediaQuery.register("mobile", 0, 768)
-        MediaQuery.register("tablet", 768, 1024)
-        MediaQuery.register("desktop", 1024, float('inf'))
-        
-        # Complete registration to trigger initial check
-        MediaQuery.complete_registration()
-        MediaQuery.debug_all_listeners()
-    
     def will_unmount(self):
         """Cleanup when page is about to be unmounted"""
         print("ForgotPasswordScreen: will_unmount called - cleaning up resources")
