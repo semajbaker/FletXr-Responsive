@@ -37,32 +37,14 @@ class SignInScreen(FletXPage):
         
         # Initialize AnimationManager with page reference (static class)
         AnimationManager.initialize_with_page(self.page)
-        
-        # Initialize MediaQuery with page
-        MediaQuery.initialize_with_page(self.page)
-        
         # Set the boxes to animate
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
-        
         # Start animation
         AnimationManager.start_animation()
-        
+        MediaQuery.update_page_reference(self.page)
+        MediaQuery.debug_all_listeners()
         # Set up listener for signin error
         self.signin_controller.signin_error.listen(self._on_error_changed)
-        
-        # Register breakpoints
-        MediaQuery.register("mobile", 0, 768)
-        MediaQuery.register("tablet", 768, 1024)
-        MediaQuery.register("desktop", 1024, float('inf'))
-        
-        # Register listeners (if you need page-specific behavior)
-        # MediaQuery.on("mobile", self._on_mobile)
-        # MediaQuery.on("tablet", self._on_tablet)
-        # MediaQuery.on("desktop", self._on_desktop)
-        
-        # Complete registration to trigger initial check
-        MediaQuery.complete_registration()
-        MediaQuery.debug_all_listeners()
         
     def will_unmount(self):
         """Cleanup when page is about to be unmounted"""

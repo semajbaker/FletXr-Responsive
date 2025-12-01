@@ -358,41 +358,60 @@ class MediaQueryController(FletXController):
             print(f"Error during MediaQueryController disposal: {e}")
 
     def cleanup(self):
-        """Clean up controller resources and reset state"""
+        """Clean up controller resources without destroying core state"""
         try:
-            # DON'T clear the page reference here - it will be updated on next init
-            # Just remove the resize handler from the old page
+            # Remove the resize handler from the old page
             if hasattr(self, '_page') and self._page:
                 old_page = self._page
                 if hasattr(old_page, 'on_resized'):
                     old_page.on_resized = None
                     print("Removed resize handler from old page")
             
-            # Stop listening to width changes
-            if hasattr(self, 'window_width') and hasattr(self.window_width, '_listeners'):
-                # Clear width listeners
-                if hasattr(self.window_width._listeners, 'clear'):
-                    self.window_width._listeners.clear()
+            # DON'T clear window_width listeners - needed for responsive system
+            # DON'T clear shared breakpoint listeners - they persist across pages
+            # DON'T reset _registration_complete - stays true after main.py registration
+            # DON'T reset _initialized - stays true after main.py initialization
             
-            # Clear all breakpoint listeners from the instance view
-            if hasattr(self, '_listeners') and hasattr(self._listeners, 'value'):
-                for point in list(self._listeners.value.keys()):
-                    listener_list = self._listeners.value.get(point)
-                    if listener_list and hasattr(listener_list, 'value'):
-                        listener_list.value = []
-            
-            # Reset instance flags
-            self._registration_complete = False
-            self._initialized = False
-            
-            print("MediaQueryController cleanup completed")
+            print("MediaQueryController cleanup completed (core state preserved)")
             
         except Exception as e:
             print(f"Error during cleanup: {e}")
 
     @classmethod
     def reset_shared_state(cls):
-        """Reset all shared class-level state - use when completely disposing"""
+        """
+        Reset only page-specific state during navigation.
+        Preserves breakpoints, dimensions, and global state.
+        """
+        try:
+            # DON'T clear breakpoint listeners - they persist across navigation
+            # Only clear reactive property listeners (page-specific UI updates)
+            
+            for prop in [cls._shared_container_width, cls._shared_text_field_width, 
+                        cls._auth_divider_width, cls._auth_navigation_controls_width]:
+                if hasattr(prop, '_listeners') and hasattr(prop._listeners, 'clear'):
+                    prop._listeners.clear()
+            
+            # DON'T reset breakpoints - registered once in main.py
+            # DON'T clear _shared_listeners - breakpoint callbacks should persist
+            # DON'T reset _shared_initialized - stays true after first page init
+            # DON'T reset _shared_registration_complete - stays true after first registration
+            # DON'T reset _shared_page - will be updated by next page's initialize_with_page
+            # DON'T reset width or current breakpoint - preserve responsive state
+            # DON'T reset dimension values - they update based on current breakpoint
+            # DON'T delete _listeners_initialized - it should persist
+            
+            print("MediaQuery page-specific listeners cleared (breakpoint listeners preserved)")
+            
+        except Exception as e:
+            print(f"Error resetting shared state: {e}")
+
+    @classmethod
+    def complete_shutdown(cls):
+        """
+        Complete reset for app shutdown.
+        Resets EVERYTHING including breakpoints and state.
+        """
         try:
             # Clear all listeners from shared state
             for point in list(cls._shared_listeners.value.keys()):
@@ -402,19 +421,16 @@ class MediaQueryController(FletXController):
             
             # Clear reactive property listeners
             for prop in [cls._shared_container_width, cls._shared_text_field_width, 
-                        cls._auth_divider_width, cls._auth_navigation_controls_width]:
+                        cls._auth_divider_width, cls._auth_navigation_controls_width,
+                        cls._shared_width, cls._shared_current_breakpoint]:
                 if hasattr(prop, '_listeners') and hasattr(prop._listeners, 'clear'):
                     prop._listeners.clear()
             
-            # Reset shared dictionaries
+            # Reset everything for shutdown
             cls._shared_breakpoints.value = {}
             cls._shared_listeners.value = {}
-            
-            # Reset shared flags
             cls._shared_initialized = False
             cls._shared_registration_complete = False
-            
-            # Clear page reference
             cls._shared_page = None
             
             # Reset to default values
@@ -429,7 +445,7 @@ class MediaQueryController(FletXController):
             if hasattr(cls, '_listeners_initialized'):
                 delattr(cls, '_listeners_initialized')
             
-            print("Shared MediaQueryController state reset")
+            print("MediaQuery completely shut down and reset")
             
         except Exception as e:
-            print(f"Error resetting shared state: {e}")
+            print(f"Error during complete shutdown: {e}")

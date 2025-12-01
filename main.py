@@ -17,11 +17,12 @@ def main():
     async def on_startup(page: ft.Page):
         print("App is running!")
         print(os.getenv('FLETX_DEBUG'))
-        
-    def on_shutdown(page: ft.Page):
-        print("App is closed!")
-        # Clean up MediaQuery on shutdown
-        MediaQuery.reset_all()
+        MediaQuery.initialize_with_page(page)
+        MediaQuery.register("mobile", 0, 768)
+        MediaQuery.register("tablet", 768, 1024)
+        MediaQuery.register("desktop", 1024, float('inf'))
+        MediaQuery.complete_registration()
+        print("MediaQuery breakpoints registered")
         
     # Add your routes
     routes = [
@@ -46,7 +47,6 @@ def main():
         initial_route="/signin",
         debug=False,
         on_startup=on_startup,
-        on_shutdown=on_shutdown
     ).with_theme(
         ft.Theme(color_scheme_seed=ft.Colors.BLUE)
     )

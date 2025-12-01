@@ -53,20 +53,40 @@ class MediaQuery:
         return controller
 
     @classmethod
+    def update_page_reference(cls, page: ft.Page):
+        """Update page reference for resize handler without full reinitialization"""
+        controller = cls.get_controller()
+        
+        # Just update the page reference and attach resize handler
+        controller._page = page
+        page.on_resized = controller._handle_resize
+        
+        print(f"MediaQuery page reference updated. Handler attached: {page.on_resized is not None}")
+
+    @classmethod
     def reset_all(cls):
-        """Complete reset - dispose controller and reset shared state"""
+        """Navigation cleanup - clear page-specific listeners only"""
+        # DON'T dispose the controller - keep it alive
+        # Just reset page-specific state
+        MediaQueryController.reset_shared_state()
+        
+        print("MediaQuery reset for navigation (controller preserved)")
+        
+    @classmethod
+    def cleanup(cls):
+        """Alias for reset_all - used during navigation"""
+        cls.reset_all()
+
+    @classmethod
+    def shutdown(cls):
+        """Complete shutdown - use only when app is closing"""
         # First dispose the current controller
         cls.dispose_controller()
         
-        # Then reset all shared state
-        MediaQueryController.reset_shared_state()
+        # Then completely reset everything including breakpoints
+        MediaQueryController.complete_shutdown()
         
-        print("MediaQuery system completely reset")
-
-    @classmethod
-    def cleanup(cls):
-        """Full cleanup including shared state reset"""
-        cls.reset_all()
+        print("MediaQuery completely shut down")
     
     @classmethod
     def register(cls, point: str, min_width: int, max_width: int):
