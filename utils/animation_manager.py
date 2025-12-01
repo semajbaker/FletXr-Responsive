@@ -49,21 +49,11 @@ class AnimationManager:
             if hasattr(controller.rx_animation_status, '_listeners'):
                 if hasattr(controller.rx_animation_status._listeners, 'clear'):
                     controller.rx_animation_status._listeners.clear()
-            
-            # Remove from FletX dependency injection
             try:
-                from fletx.core.di import DI
-                tag = 'animation_ctrl'
-                if AnimationController in DI._instances:
-                    if tag in DI._instances[AnimationController]:
-                        # Call dispose if available
-                        if hasattr(controller, 'dispose'):
-                            controller.dispose()
-                        # Remove from DI
-                        del DI._instances[AnimationController][tag]
-                        print("AnimationController removed from DI")
+                controller = FletX.reset()
+                print("AnimationController disposed")
             except Exception as e:
-                print(f"Error removing controller from DI: {e}")
+                print(f"Error disposing AnimationController: {e}")
         
         return controller
     

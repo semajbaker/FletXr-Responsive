@@ -37,18 +37,10 @@ class MediaQuery:
             
             # Remove from FletX dependency injection
             try:
-                from fletx.core.di import DI
-                tag = 'media_query_controller'
-                if MediaQueryController in DI._instances:
-                    if tag in DI._instances[MediaQueryController]:
-                        # Call dispose manually to trigger our custom disposal
-                        if hasattr(controller, 'dispose'):
-                            controller.dispose()
-                        # Remove from DI
-                        del DI._instances[MediaQueryController][tag]
-                        print("MediaQueryController removed from DI")
+                controller = FletX.reset()
+                print("MediaQuery Controller disposed")
             except Exception as e:
-                print(f"Error removing controller from DI: {e}")
+                print(f"Error disposing MediaQuery Controller: {e}")
         
         return controller
 
