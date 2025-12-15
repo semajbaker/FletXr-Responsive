@@ -1,4 +1,5 @@
 from fletx.core import FletXController
+from utils import get_storage
 from services.auth_service import SignInService, SignUpService
 import re
 
@@ -86,6 +87,11 @@ class SigninController(FletXController):
             # Check if response is successful
             if response.status == 200:
                 data = response.json()
+                tokens = {
+                    'access': data.get('data')['access_token'],
+                    'refresh': data.get('data')['refresh_token']
+                }
+                get_storage().set('tokens', tokens)
                 self.is_loading.value = False
                 return True, "Sign in successful!", data
             else:

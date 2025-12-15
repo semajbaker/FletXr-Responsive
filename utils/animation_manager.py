@@ -6,7 +6,7 @@ File: utils/animation_manager.py
 import flet as ft 
 from math import pi, sin, cos
 from fletx import FletX
-from typing import Optional
+from typing import Optional, Callable
 from controllers.animation_controller import AnimationController
 
 class AnimationManager:
@@ -20,6 +20,7 @@ class AnimationManager:
     _scale_factor = 0
     _opacity_factor = 0
     _boxes = []
+    _listener_callback: Optional[Callable] = None
     
     @classmethod
     def get_controller(cls) -> AnimationController:
@@ -27,56 +28,61 @@ class AnimationManager:
         controller = FletX.find(AnimationController, tag='animation_ctrl')
         
         if controller is None:
-            # If not found, create and register it
-            controller = AnimationController()
-            FletX.put(controller, tag='animation_ctrl')
-            
-            # Subscribe to animation status changes
-            controller.rx_animation_status.listen(cls._on_animation_status_changed)
+            raise RuntimeError("AnimationController not found! Make sure it's initialized in main.py")
         
         return controller
     
     @classmethod
-    def dispose_controller(cls):
-        """Dispose the animation controller and clean up resources"""
-        controller = FletX.find(AnimationController, tag='animation_ctrl')
-        
-        if controller is not None:
-            # Stop animation first
-            controller.stop_animation()
-            
-            # Clean up listeners
-            if hasattr(controller.rx_animation_status, '_listeners'):
-                if hasattr(controller.rx_animation_status._listeners, 'clear'):
-                    controller.rx_animation_status._listeners.clear()
+    def cleanup_listener(cls):
+        """Remove the current listener from the controller"""
+        if cls._listener_callback is not None:
+            controller = cls.get_controller()
             try:
-                controller = FletX.reset()
-                print("AnimationController disposed")
-            except Exception as e:
-                print(f"Error disposing AnimationController: {e}")
-        
-        return controller
+                # Remove the listener
+                controller.rx_animation_status.dispose()
+                print("AnimationManager: Listener removed")
+            except (ValueError, AttributeError) as e:
+                print(f"AnimationManager: Error removing listener: {e}")
+            finally:
+                cls._listener_callback = None
     
     @classmethod
     def cleanup(cls):
-        """Full cleanup of animation system"""
-        # Dispose controller
-        cls.dispose_controller()
+        """Cleanup for page navigation - reset animation state but keep controller"""
+        # Stop animation first
+        controller = cls.get_controller()
+        controller.stop_animation()
         
-        # Reset class-level state
+        # Remove listener
+        cls.cleanup_listener()
+        
+        # Reset animation state
         cls._angle = 0
         cls._scale_factor = 0
         cls._opacity_factor = 0
         cls._boxes = []
         cls._page = None
         
-        print("AnimationManager completely cleaned up")
+        print("AnimationManager: Page cleanup completed (controller preserved)")
     
     @classmethod
     def initialize_with_page(cls, page: ft.Page):
         """Initialize the animation system with a page reference"""
+        # Clean up any existing listener first
+        cls.cleanup_listener()
+        
         cls._page = page
-        print("AnimationManager initialized with page")
+        
+        # Get the global controller
+        controller = cls.get_controller()
+        
+        # Create and store the listener callback
+        cls._listener_callback = cls._on_animation_status_changed
+        
+        # Subscribe to animation status changes
+        controller.rx_animation_status.listen(cls._listener_callback)
+        
+        print("AnimationManager: Initialized with page and new listener attached")
     
     @classmethod
     def _on_animation_status_changed(cls):
@@ -103,12 +109,9 @@ class AnimationManager:
     
     @classmethod
     def stop_animation(cls):
-        """Stop the animation and cleanup"""
+        """Stop the animation"""
         controller = cls.get_controller()
         controller.stop_animation()
-        
-        # Perform cleanup after stopping
-        cls.cleanup()
     
     @classmethod
     def is_animating(cls) -> bool:
@@ -172,7 +175,6 @@ class AnimationManager:
         except Exception as e:
             print(f"Animation update error: {e}")
             controller.stop_animation()
-            cls.cleanup()
             return
         
         # Schedule next frame (50ms = 20fps)

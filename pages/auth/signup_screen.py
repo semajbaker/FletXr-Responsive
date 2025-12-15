@@ -44,31 +44,39 @@ class SignUpScreen(FletXPage):
         """Initialize animation and controller after page is ready"""
         print("SignUpScreen: on_init called")
         
-        # Initialize AnimationManager with page reference (static class)
+        # Initialize AnimationManager with page reference
+        # This will attach a NEW listener to the EXISTING controller
         AnimationManager.initialize_with_page(self.page)
         
         # Set the boxes to animate
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
-        # Start animation using controller
+        
+        # Start animation
         AnimationManager.start_animation()
+        
         MediaQuery.update_page_reference(self.page)
         MediaQuery.debug_all_listeners()
+        
         # Set up listener for signup error
         self.signup_controller.signup_error.listen(self._on_error_changed)
 
     def will_unmount(self):
         """Cleanup when page is about to be unmounted"""
         print("SignUpScreen: will_unmount called - cleaning up resources")
+        
+        # Cleanup widgets
         for widget in self.widgets_to_cleanup:
             if hasattr(widget, 'will_unmount'):
                 try:
                     widget.will_unmount()
                 except Exception as e:
                     print(f"Error cleaning up widget {widget}: {e}")
+        
         # Clear the list
-        self.widgets_to_cleanup.clear()        
-        # Stop animation using static class method
-        AnimationManager.stop_animation()
+        self.widgets_to_cleanup.clear()
+        
+        # Cleanup animation (stops animation and removes listener)
+        AnimationManager.cleanup()
         
         # Clean up MediaQuery
         MediaQuery.reset_all()

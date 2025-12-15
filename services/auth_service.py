@@ -1,4 +1,5 @@
 from fletx.core import FletXService
+from utils import get_storage
 from fletx.core.http import HTTPClient
 from dotenv import load_dotenv
 import os
@@ -31,11 +32,20 @@ class SignInService(FletXService):
                     json_data=payload          
                 )
 
-
             return response
         except Exception as e:
             print(f"SignIn Error: {e}")
             raise
+
+    def get_token(self, name:str):
+        """Return saved token from Client Storage"""
+
+        tokens: dict = (
+            get_storage().get('tokens') 
+            if get_storage().contains_key('tokens')
+            else {}
+        )
+        return tokens.get(name)
 
 
 class SignUpService(FletXService):
@@ -161,3 +171,17 @@ class LogoutService(FletXService):
         except Exception as e:
             print(f"Logout Error: {e}")
             raise
+
+
+
+def refresh_token(self):
+    """Refresh auth tokens"""
+
+    token = self.get_token('access')
+
+    return self.http_client.post(
+        endpoint = '/auth/refresh-token',
+        json_data = {
+            "refreshToken": f"{token}"
+        }
+    )

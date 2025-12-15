@@ -68,7 +68,7 @@ class ResponsiveInputField(ft.Container):
                 self._container_width_observer = None
             
             if self._field_width_observer:
-                self._field_width_observer.dispose
+                self._field_width_observer.dispose()
                 self._field_width_observer = None
             
             if self._rx_value_observer:

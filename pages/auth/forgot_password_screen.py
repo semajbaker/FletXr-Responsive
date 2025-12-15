@@ -45,7 +45,8 @@ class ForgotPasswordScreen(FletXPage):
         """Initialize animation and controller after page is ready"""
         print("ForgotPasswordScreen: on_init called")
         
-        # Initialize AnimationManager with page reference (static class)
+        # Initialize AnimationManager with page reference
+        # This will attach a NEW listener to the EXISTING controller
         AnimationManager.initialize_with_page(self.page)
         
         # Set the boxes to animate
@@ -53,8 +54,10 @@ class ForgotPasswordScreen(FletXPage):
         
         # Start animation
         AnimationManager.start_animation()
+        
         MediaQuery.update_page_reference(self.page)
         MediaQuery.debug_all_listeners()
+        
         # Set up listeners for error and success messages
         self.forgot_password_controller.error.listen(self._on_error_changed)
         self.forgot_password_controller.success.listen(self._on_success_changed)
@@ -74,8 +77,8 @@ class ForgotPasswordScreen(FletXPage):
         # Clear the list
         self.widgets_to_cleanup.clear()
         
-        # Stop animation using static class method
-        AnimationManager.stop_animation()
+        # Cleanup animation (stops animation and removes listener)
+        AnimationManager.cleanup()
         
         # Clean up MediaQuery
         MediaQuery.reset_all()
@@ -133,9 +136,6 @@ class ForgotPasswordScreen(FletXPage):
         safe_navigate("/signin", current_page=self)
 
     def build(self):
-        # Clear any previous widgets
-        self.widgets_to_cleanup.clear()
-        
         # Create widgets
         email_field = input_field(
             "Enter your email address", 
