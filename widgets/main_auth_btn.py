@@ -1,5 +1,6 @@
 import flet as ft
 from utils.responsive_manager import MediaQuery
+
 class ResponsiveMainAuthBtn(ft.Container):
     """Reactive main auth btn that automatically updates when breakpoints change."""
     

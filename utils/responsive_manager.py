@@ -17,19 +17,18 @@ class MediaQuery:
     @classmethod
     def get_controller(cls) -> MediaQueryController:
         """Get the media query controller from FletX dependency injection"""
-        controller = FletX.find(MediaQueryController, tag='media_query_controller')
+        controller: MediaQueryController = FletX.find(MediaQueryController, tag='media_query_ctrl')
         
         if controller is None:
-            # If not found, create and register it
-            controller = MediaQueryController()
-            FletX.put(controller, tag='media_query_controller')
+            raise RuntimeError("MediaQueryController not found! Make sure it's initialized in main.py")
         
         return controller
+    
     
     @classmethod
     def dispose_controller(cls):
         """Dispose the media query controller and clean up resources"""
-        controller = FletX.find(MediaQueryController, tag='media_query_controller')
+        controller: MediaQueryController = FletX.find(MediaQueryController, tag='media_query_ctrl')
         
         if controller is not None:
             # Clean up the controller instance
@@ -38,9 +37,9 @@ class MediaQuery:
             # Remove from FletX dependency injection
             try:
                 controller = FletX.reset()
-                print("MediaQuery Controller disposed")
+                print("MediaQuery Controller reset")
             except Exception as e:
-                print(f"Error disposing MediaQuery Controller: {e}")
+                print(f"Error reseting MediaQuery Controller: {e}")
         
         return controller
 

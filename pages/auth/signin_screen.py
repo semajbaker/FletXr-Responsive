@@ -1,13 +1,14 @@
 import flet as ft
+from fletx import FletX
 from fletx.core import FletXPage
-from utils.navigation_helper import safe_navigate
+from fletx.navigation import navigate
 from utils.animation_manager import AnimationManager
 from widgets.animated_box import animated_box
 from widgets.input_field import input_field
 from widgets.main_auth_btn import main_auth_btn
-from widgets.auth_action_controlls import auth_action_controlls
+from widgets.auth_action_controls import auth_action_controlls
 from widgets.auth_divider import auth_divider
-from controllers.auth_controller import SigninController
+from controllers.auth_controller import SignInController
 from constants.ui_constants import AppColors
 from utils.responsive_manager import MediaQuery
 
@@ -19,42 +20,21 @@ class SignInScreen(FletXPage):
         self.box3 = animated_box(ft.Colors.AMBER_400, ft.Colors.ORANGE_300, 1.2)
         self.box4 = animated_box(ft.Colors.GREEN_400, ft.Colors.LIGHT_GREEN_300, 0.9)
         self.widgets_to_cleanup = []
-        # Initialize SigninController
-        self.signin_controller = SigninController()
-        
-        # Create error text that will update reactively
-        self.error_text = ft.Text(
-            value="",
-            size=12,
-            color=ft.Colors.RED_400,
-            text_align=ft.TextAlign.CENTER,
-            visible=False
-        )
-        
+        self.signin_controller: SignInController = FletX.find(
+            SignInController, tag='signin_ctrl'
+            )
     def on_init(self):
-        """Initialize animation and controller after page is ready"""
-        print("SignInScreen: on_init called")
-        
-        # Initialize AnimationManager with page reference
         # This will attach a NEW listener to the EXISTING controller
         AnimationManager.initialize_with_page(self.page)
-        
         # Set the boxes to animate
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
-        
         # Start animation
         AnimationManager.start_animation()
-        
+
         MediaQuery.update_page_reference(self.page)
         MediaQuery.debug_all_listeners()
         
-        # Set up listener for signin error
-        self.signin_controller.signin_error.listen(self._on_error_changed)
-        
-    def will_unmount(self):
-        """Cleanup when page is about to be unmounted"""
-        print("SignInScreen: will_unmount called - cleaning up resources")
-        
+    def on_destroy(self):
         # Cleanup widgets
         for widget in self.widgets_to_cleanup:
             if hasattr(widget, 'will_unmount'):
@@ -65,63 +45,34 @@ class SignInScreen(FletXPage):
         
         # Clear the list
         self.widgets_to_cleanup.clear()
-        
-        # Cleanup animation (stops animation and removes listener)
         AnimationManager.cleanup()
-        
-        # Clean up MediaQuery
         MediaQuery.reset_all()
-        
-        print("SignInScreen: cleanup completed")
-        
-    def on_destroy(self):
-        """Cleanup on page destroy"""
-        print("SignInScreen: on_destroy called")
+        print("Signin Screen destroyed")
 
-    def _on_error_changed(self):
-        """Handle error message changes"""
-        if self.signin_controller.signin_error.value:
-            self.error_text.value = self.signin_controller.signin_error.value
-            self.error_text.visible = True
-        else:
-            self.error_text.visible = False
-        self.error_text.update()
-    
-    async def handle_signin(self, e):
+    def handle_signin(self, e):
         """Handle sign in button click"""
         print(f"Sign In clicked!")
         print(f"Email: {self.signin_controller.email.value}")
         print(f"Password: {self.signin_controller.password.value}")
         
         # Call the signin method from controller
-        success, message, data = await self.signin_controller.signin()
+        success, message, data = self.signin_controller.signin()
         
         if success:
-            print(f"Sign in successful! Message: {message}")
-            print(f"User data: {data}")
-            
-            # Store the token (you might want to use a secure storage mechanism)
-            if data and 'token' in data:
-                # TODO: Store token securely
-                print(f"Token received: {data['token']}")
-            
+            print(f"Message: {message}")
             # Navigate to home or dashboard
             # safe_navigate("/home", current_page=self, replace=True, clear_history=True)
         else:
             print(f"Sign in failed: {message}")
             # Error is already set in the controller and will be displayed
-        
-    def go_to_forgot_password(self, e):
-        """Handle forgot password"""
-        print("Navigating to forgot password...")
-        # Use safe_navigate to ensure cleanup happens
-        safe_navigate("/forgot-password", current_page=self)
+    
+    def goto_signup(self, e):
+        self.will_unmount()
+        navigate("/signup")
 
-    def go_to_signup(self, e):
-        """Navigate to signup screen"""
-        print("Navigating to signup...")
-        # Use safe_navigate to ensure cleanup happens
-        safe_navigate("/signup", current_page=self)
+    def goto_forgot_password(self, e):
+        self.will_unmount()
+        navigate("/forgot-password")
 
     def build(self):
         email_field = input_field(
@@ -138,9 +89,9 @@ class SignInScreen(FletXPage):
         )
         auth_controls = auth_action_controlls(
             primary_action_text="Sign Up",
-            primary_action_on_click=self.go_to_signup,
+            primary_action_on_click=self.goto_signup,
             show_forgot_password=True,
-            forgot_password_on_click=self.go_to_forgot_password
+            forgot_password_on_click=self.goto_forgot_password
         )
         main_btn = main_auth_btn("Sign In", on_click=self.handle_signin)
         divider = auth_divider()
@@ -226,8 +177,6 @@ class SignInScreen(FletXPage):
                         # Password input field with reactive binding
                         password_field,
                         ft.Container(height=10),
-                        # Error message display
-                        self.error_text,
                         ft.Container(height=20),
                         ft.Row(
                             alignment=ft.MainAxisAlignment.CENTER,

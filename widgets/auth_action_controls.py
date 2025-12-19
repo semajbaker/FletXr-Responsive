@@ -1,5 +1,6 @@
 import flet as ft
 from utils.responsive_manager import MediaQuery
+
 class ResponsiveAuthActionControls(ft.Container):
     """Reactive auth action controls that automatically update when breakpoints change."""
     

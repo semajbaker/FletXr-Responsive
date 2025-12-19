@@ -1,4 +1,5 @@
 import flet as ft
+
 class AppColors:
     """Centralized color definitions for the application"""
     

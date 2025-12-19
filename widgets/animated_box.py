@@ -1,7 +1,8 @@
 import flet as ft
-    
-def animated_box(primary_color, secondary_color, initial_scale):
-    return ft.Container(
+
+class AnimatedBox(ft.Container):
+    def __init__(self, primary_color: ft.Colors, secondary_color: ft.Colors, initial_scale: float):
+        super().__init__(
         width=60,
         height=60,
         bgcolor=primary_color,
@@ -20,3 +21,7 @@ def animated_box(primary_color, secondary_color, initial_scale):
             offset=ft.Offset(0, 5)
         ),
     )
+
+
+def animated_box(primary_color: ft.Colors, secondary_color: ft.Colors, initial_scale: float):
+    return AnimatedBox(primary_color, secondary_color, initial_scale)

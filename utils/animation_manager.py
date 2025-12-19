@@ -25,7 +25,7 @@ class AnimationManager:
     @classmethod
     def get_controller(cls) -> AnimationController:
         """Get the animation controller from FletX dependency injection"""
-        controller = FletX.find(AnimationController, tag='animation_ctrl')
+        controller: AnimationController = FletX.find(AnimationController, tag='animation_ctrl')
         
         if controller is None:
             raise RuntimeError("AnimationController not found! Make sure it's initialized in main.py")
@@ -39,6 +39,7 @@ class AnimationManager:
             controller = cls.get_controller()
             try:
                 # Remove the listener
+                controller.rx_animation_status._remove_observer(cls._listener_callback)
                 controller.rx_animation_status.dispose()
                 print("AnimationManager: Listener removed")
             except (ValueError, AttributeError) as e:
@@ -69,7 +70,7 @@ class AnimationManager:
     def initialize_with_page(cls, page: ft.Page):
         """Initialize the animation system with a page reference"""
         # Clean up any existing listener first
-        cls.cleanup_listener()
+        #cls.cleanup_listener()
         
         cls._page = page
         

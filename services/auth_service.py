@@ -6,12 +6,12 @@ import os
 
 load_dotenv()
 class SignInService(FletXService):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         # Get the backend URL from environment variable
-        backend_url = os.getenv("BACKEND_URL", "http://localhost:3000")
-        super().__init__(http_client=HTTPClient(base_url=backend_url))
+        backend_url = os.getenv("BACKEND_URL", "http://localhost:5000")
+        super().__init__(http_client=HTTPClient(base_url=backend_url, sync_mode=True), **kwargs)
 
-    async def post(self, email: str, password: str):
+    def post(self, email: str, password: str):
         """
         Sign in user with email and password
         
@@ -27,34 +27,25 @@ class SignInService(FletXService):
                 "email": email,
                 "password": password
             }
-            response = await self.http_client.post(               
-                    endpoint="/api/auth/login",
-                    json_data=payload          
-                )
-
-            return response
+            return self.http_client.post(
+                endpoint = '/api/auth/login',
+                json_data = payload,
+                headers = {
+                    'Content-Type': 'application/json'
+                }
+            )
         except Exception as e:
             print(f"SignIn Error: {e}")
             raise
 
-    def get_token(self, name:str):
-        """Return saved token from Client Storage"""
-
-        tokens: dict = (
-            get_storage().get('tokens') 
-            if get_storage().contains_key('tokens')
-            else {}
-        )
-        return tokens.get(name)
-
 
 class SignUpService(FletXService):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         # Get the backend URL from environment variable
-        backend_url = os.getenv("BACKEND_URL", "http://localhost:3000")
-        super().__init__(http_client=HTTPClient(base_url=backend_url))
+        backend_url = os.getenv("BACKEND_URL", "http://localhost:5000")
+        super().__init__(http_client=HTTPClient(base_url=backend_url, sync_mode=True), **kwargs)
 
-    async def post(self, username: str, email: str, phone_number: str, password: str):
+    def post(self, username: str, email: str, phone_number: str, password: str):
         """
         Register a new user
         
@@ -73,23 +64,25 @@ class SignUpService(FletXService):
                 "phone_number": phone_number,
                 "password": password
             }
-            response = await self.http_client.post(
+            return self.http_client.post(
                 endpoint="/api/auth/register",
-                json_data=payload
+                json_data=payload,
+                headers = {
+                    'Content-Type': 'application/json'
+                }
             )
-            return response
         except Exception as e:
             print(f"SignUp Error: {e}")
             raise
 
 
 class ForgotPasswordService(FletXService):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         # Get the backend URL from environment variable
-        backend_url = os.getenv("BACKEND_URL", "http://localhost:3000")
-        super().__init__(http_client=HTTPClient(base_url=backend_url))
+        backend_url = os.getenv("BACKEND_URL", "http://localhost:5000")
+        super().__init__(http_client=HTTPClient(base_url=backend_url, sync_mode=True), **kwargs)
 
-    async def post(self, email: str):
+    def post(self, email: str):
         """
         Send password reset link to user's email
         
@@ -103,53 +96,67 @@ class ForgotPasswordService(FletXService):
             payload = {
                 "email": email
             }
-            response = await self.http_client.post(
+            return self.http_client.post(
                 "/api/auth/forgot-password",
-                data=payload
+                data=payload,
+                headers = {
+                    'Content-Type': 'application/json'
+                }
             )
-            return response
         except Exception as e:
             print(f"ForgotPassword Error: {e}")
             raise
 
 
-class RefreshTokenService(FletXService):
-    def __init__(self):
+class SessionService(FletXService):
+    def __init__(self, *args, **kwargs):
         # Get the backend URL from environment variable
-        backend_url = os.getenv("BACKEND_URL", "http://localhost:3000")
-        super().__init__(http_client=HTTPClient(base_url=backend_url))
+        backend_url = os.getenv("BACKEND_URL", "http://localhost:5000")
+        super().__init__(http_client=HTTPClient(base_url=backend_url,  sync_mode=True), **kwargs)
+    
+    def get_token(self, name:str):
+        """Return saved token from Client Storage"""
 
-    async def post(self, refresh_token: str):
-        """
-        Refresh the access token
-        
-        Args:
-            refresh_token: The refresh token
-            
-        Returns:
-            Response with new access token
-        """
-        try:
-            payload = {
-                "refresh_token": refresh_token
+        tokens: dict = (
+            get_storage().get('tokens') 
+            if get_storage().contains_key('tokens')
+            else {}
+        )
+        return tokens.get(name)
+
+    def refresh_token(self):
+        """Refresh auth tokens"""
+
+        token = self.get_token('access')
+
+        return self.http_client.post(
+            endpoint = '/api/auth/refresh-token',
+            json_data = {
+                "refreshToken": f"{token}"
             }
-            response = await self.http_client.post(
-                "/api/auth/refresh",
-                data=payload
-            )
-            return response
-        except Exception as e:
-            print(f"RefreshToken Error: {e}")
-            raise
+        )
+    
+    def get_profile(self):
+        """Get user profile by a given token."""
+
+        token = self.get_token('access')
+
+        return self.http_client.get(
+            endpoint = '/api/auth/profile',
+            headers = {
+                'Content-Type': 'application/json',
+                'Authorization': f'Bearer {token}'
+            }
+        )
 
 
 class LogoutService(FletXService):
-    def __init__(self):
+    def __init__(self, *args, **kwargs):
         # Get the backend URL from environment variable
-        backend_url = os.getenv("BACKEND_URL", "http://localhost:3000")
-        super().__init__(http_client=HTTPClient(base_url=backend_url))
+        backend_url = os.getenv("BACKEND_URL", "http://localhost:5000")
+        super().__init__(http_client=HTTPClient(base_url=backend_url, sync_mode=True), **kwargs)
 
-    async def post(self, token: str = None):
+    def post(self, token: str = None):
         """
         Logout user
         
@@ -163,7 +170,7 @@ class LogoutService(FletXService):
             payload = {}
             if token:
                 payload["token"] = token
-            response = await self.http_client.post(
+            response = self.http_client.post(
                 "/api/auth/logout",
                 data=payload
             )
@@ -171,17 +178,3 @@ class LogoutService(FletXService):
         except Exception as e:
             print(f"Logout Error: {e}")
             raise
-
-
-
-def refresh_token(self):
-    """Refresh auth tokens"""
-
-    token = self.get_token('access')
-
-    return self.http_client.post(
-        endpoint = '/auth/refresh-token',
-        json_data = {
-            "refreshToken": f"{token}"
-        }
-    )

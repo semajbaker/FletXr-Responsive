@@ -1,12 +1,13 @@
 import flet as ft
+from fletx import FletX
 from fletx.core import FletXPage
-from utils.navigation_helper import safe_navigate
+from fletx.navigation import navigate
 from utils.animation_manager import AnimationManager
-from constants.ui_constants import AppColors
 from widgets.animated_box import animated_box
 from widgets.input_field import input_field
 from widgets.main_auth_btn import main_auth_btn
-from widgets.auth_action_controlls import auth_action_controlls
+from widgets.auth_action_controls import auth_action_controlls
+from constants.ui_constants import AppColors
 from controllers.auth_controller import ForgotPasswordController
 from utils.responsive_manager import MediaQuery
 
@@ -18,55 +19,23 @@ class ForgotPasswordScreen(FletXPage):
         self.box3 = animated_box(ft.Colors.AMBER_400, ft.Colors.ORANGE_300, 1.2)
         self.box4 = animated_box(ft.Colors.GREEN_400, ft.Colors.LIGHT_GREEN_300, 0.9)
         self.widgets_to_cleanup = []
-        
-        # Initialize ForgotPasswordController
-        self.forgot_password_controller = ForgotPasswordController()
-        
-        # Create error text that will update reactively
-        self.error_text = ft.Text(
-            value="",
-            size=12,
-            color=ft.Colors.RED_400,
-            text_align=ft.TextAlign.CENTER,
-            visible=False
+        self.forgot_password_controller: ForgotPasswordController = FletX.find(
+            ForgotPasswordController, tag='forgot_password_ctrl'
         )
-        
-        # Create success text that will update reactively
-        self.success_text = ft.Text(
-            value="",
-            size=12,
-            color=ft.Colors.GREEN_600,
-            text_align=ft.TextAlign.CENTER,
-            visible=False,
-            weight=ft.FontWeight.W_500
-        )
-
+    
     def on_init(self):
-        """Initialize animation and controller after page is ready"""
-        print("ForgotPasswordScreen: on_init called")
-        
-        # Initialize AnimationManager with page reference
         # This will attach a NEW listener to the EXISTING controller
         AnimationManager.initialize_with_page(self.page)
-        
         # Set the boxes to animate
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
-        
         # Start animation
         AnimationManager.start_animation()
-        
+
         MediaQuery.update_page_reference(self.page)
         MediaQuery.debug_all_listeners()
         
-        # Set up listeners for error and success messages
-        self.forgot_password_controller.error.listen(self._on_error_changed)
-        self.forgot_password_controller.success.listen(self._on_success_changed)
-        
-    def will_unmount(self):
-        """Cleanup when page is about to be unmounted"""
-        print("ForgotPasswordScreen: will_unmount called - cleaning up resources")
-        
-        # Clean up all widgets
+    def on_destroy(self):
+        # Cleanup widgets
         for widget in self.widgets_to_cleanup:
             if hasattr(widget, 'will_unmount'):
                 try:
@@ -76,39 +45,10 @@ class ForgotPasswordScreen(FletXPage):
         
         # Clear the list
         self.widgets_to_cleanup.clear()
-        
-        # Cleanup animation (stops animation and removes listener)
         AnimationManager.cleanup()
-        
-        # Clean up MediaQuery
         MediaQuery.reset_all()
-        
-        print("ForgotPasswordScreen: cleanup completed")
-    
-    def on_destroy(self):
-        """Cleanup on page destroy"""
-        print("ForgotPasswordScreen: on_destroy called")
-        
-    def _on_error_changed(self):
-        """Handle error message changes"""
-        if self.forgot_password_controller.error.value:
-            self.error_text.value = self.forgot_password_controller.error.value
-            self.error_text.visible = True
-            self.success_text.visible = False
-        else:
-            self.error_text.visible = False
-        self.error_text.update()
-    
-    def _on_success_changed(self):
-        """Handle success message changes"""
-        if self.forgot_password_controller.success.value:
-            self.success_text.value = self.forgot_password_controller.success.value
-            self.success_text.visible = True
-            self.error_text.visible = False
-        else:
-            self.success_text.visible = False
-        self.success_text.update()
-    
+        print("Forgot Password Screen destroyed")
+
     def handle_send_reset_link(self, e):
         """Handle send reset link button click"""
         print(f"Send Reset Link clicked!")
@@ -129,11 +69,9 @@ class ForgotPasswordScreen(FletXPage):
         else:
             print(f"Form validation failed. Error: {self.forgot_password_controller.error.value}")
 
-    def go_to_signin(self, e):
-        """Navigate to signin screen"""
-        print("Navigating to signin...")
-        # Use safe_navigate to ensure cleanup happens
-        safe_navigate("/signin", current_page=self)
+    def goto_signin(self, e):
+        self.will_unmount()
+        navigate("/signin")
 
     def build(self):
         # Create widgets
@@ -146,7 +84,7 @@ class ForgotPasswordScreen(FletXPage):
         
         auth_controls = auth_action_controlls(
             primary_action_text="Sign In",
-            primary_action_on_click=self.go_to_signin,
+            primary_action_on_click=self.goto_signin,
             show_forgot_password=False,
         )
         
@@ -232,11 +170,6 @@ class ForgotPasswordScreen(FletXPage):
                         ft.Container(height=30),
                         # Email input field with reactive binding
                         email_field,
-                        ft.Container(height=15),
-                        # Error message display
-                        self.error_text,
-                        # Success message display
-                        self.success_text,
                         ft.Container(height=25),
                         ft.Row(
                             alignment=ft.MainAxisAlignment.CENTER,

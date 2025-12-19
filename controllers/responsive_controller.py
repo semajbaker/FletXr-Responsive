@@ -1,5 +1,6 @@
 import flet as ft
 from typing import Callable
+from fletx import FletX
 from fletx.core import FletXController, RxStr, RxInt, RxDict, RxList
 from constants.responsive_constants import *
 
@@ -449,3 +450,5 @@ class MediaQueryController(FletXController):
             
         except Exception as e:
             print(f"Error during complete shutdown: {e}")
+            
+FletX.put(MediaQueryController(), tag='media_query_ctrl')

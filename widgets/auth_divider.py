@@ -1,5 +1,6 @@
 import flet as ft
 from utils.responsive_manager import MediaQuery
+
 class ResponsiveAuthDivider(ft.Row):
     """Reactive auth divider that automatically updates when breakpoints change."""
     

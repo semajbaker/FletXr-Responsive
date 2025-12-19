@@ -1,15 +1,16 @@
 import flet as ft
+from fletx import FletX
 from fletx.core import FletXPage
-from utils.navigation_helper import safe_navigate
+from fletx.navigation import navigate
 from widgets.animated_box import animated_box
-from utils.animation_manager import AnimationManager
 from widgets.input_field import input_field
 from widgets.main_auth_btn import main_auth_btn
-from controllers.auth_controller import SignupController
+from widgets.auth_action_controls import auth_action_controlls
+from widgets.auth_divider import auth_divider
+from controllers.auth_controller import SignUpController
+from utils.animation_manager import AnimationManager
 from constants.ui_constants import AppColors
 from utils.responsive_manager import MediaQuery
-from widgets.auth_divider import auth_divider
-from widgets.auth_action_controlls import auth_action_controlls
 
 class SignUpScreen(FletXPage):
     def __init__(self):
@@ -19,51 +20,22 @@ class SignUpScreen(FletXPage):
         self.box3 = animated_box(ft.Colors.AMBER_400, ft.Colors.ORANGE_300, 1.2)
         self.box4 = animated_box(ft.Colors.GREEN_400, ft.Colors.LIGHT_GREEN_300, 0.9)
         self.widgets_to_cleanup = []
-        # Initialize SignupController
-        self.signup_controller = SignupController()
-        
-        # Create error text that will update reactively
-        self.error_text = ft.Text(
-            value="",
-            size=12,
-            color=ft.Colors.RED_400,
-            text_align=ft.TextAlign.CENTER,
-            visible=False
-        )
-        
-        # Create success text for validation feedback
-        self.success_text = ft.Text(
-            value="",
-            size=12,
-            color=ft.Colors.GREEN_600,
-            text_align=ft.TextAlign.CENTER,
-            visible=False
-        )
-        
+        self.signup_controller: SignUpController = FletX.find(
+            SignUpController, tag='signup_ctrl'
+            )
     def on_init(self):
-        """Initialize animation and controller after page is ready"""
-        print("SignUpScreen: on_init called")
-        
-        # Initialize AnimationManager with page reference
         # This will attach a NEW listener to the EXISTING controller
         AnimationManager.initialize_with_page(self.page)
-        
         # Set the boxes to animate
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
-        
         # Start animation
         AnimationManager.start_animation()
         
         MediaQuery.update_page_reference(self.page)
         MediaQuery.debug_all_listeners()
         
-        # Set up listener for signup error
-        self.signup_controller.signup_error.listen(self._on_error_changed)
 
-    def will_unmount(self):
-        """Cleanup when page is about to be unmounted"""
-        print("SignUpScreen: will_unmount called - cleaning up resources")
-        
+    def on_destroy(self):
         # Cleanup widgets
         for widget in self.widgets_to_cleanup:
             if hasattr(widget, 'will_unmount'):
@@ -71,81 +43,39 @@ class SignUpScreen(FletXPage):
                     widget.will_unmount()
                 except Exception as e:
                     print(f"Error cleaning up widget {widget}: {e}")
-        
         # Clear the list
         self.widgets_to_cleanup.clear()
-        
-        # Cleanup animation (stops animation and removes listener)
         AnimationManager.cleanup()
-        
-        # Clean up MediaQuery
         MediaQuery.reset_all()
-        
-        print("SignUpScreen: cleanup completed")
-        
-    def on_destroy(self):
-        """Cleanup on page destroy"""
-        print("SignUpScreen: on_destroy called")
+        print("Signup Screen destroyed")
 
-    def _on_error_changed(self):
-        """Handle error message changes"""
-        if self.signup_controller.signup_error.value:
-            self.error_text.value = self.signup_controller.signup_error.value
-            self.error_text.visible = True
-            self.success_text.visible = False
-        else:
-            self.error_text.visible = False
-        self.error_text.update()
-    
-    def _on_validation_changed(self):
-        """Handle validation state changes"""
-        if self.signup_controller.is_valid.value:
-            self.success_text.value = "All fields are valid! ✓"
-            self.success_text.visible = True
-            self.error_text.visible = False
-            self.success_text.update()
-        else:
-            self.success_text.visible = False
-            if hasattr(self, 'success_text') and self.success_text.page:
-                self.success_text.update()
-
-    async def handle_signup(self, e):
+    def handle_signup(self, e):
         """Handle sign up button click"""
         print(f"Sign Up clicked!")
         print(f"Username: {self.signup_controller.username.value}")
         print(f"Email: {self.signup_controller.email.value}")
         
         # Call the signup method from controller
-        success, message, data = await self.signup_controller.signup()
+        success, message, data = self.signup_controller.signup()
         
         if success:
-            print(f"Sign up successful! Message: {message}")
+            print(f"Message: {message}")
             print(f"User data: {data}")
-            
-            # Store the token (you might want to use a secure storage mechanism)
-            if data and 'access_token' in data:
-                # TODO: Store token securely
-                print(f"Access token received: {data['access_token']}")
-                print(f"User info: {data.get('user', {})}")
             
             # Optionally reset form
             # self.signup_controller.reset_form()
-            
-            # Navigate to signin or home page with safe_navigate
-            safe_navigate("/signin", current_page=self, replace=True, clear_history=True)
+            navigate("/signin")
         else:
             print(f"Sign up failed: {message}")
             # Error is already set in the controller and will be displayed
-        
-    def go_to_signin(self, e):
-        """Navigate to signin screen"""
-        print("Navigating to signin...")
-        # Use safe_navigate to ensure cleanup happens
-        safe_navigate("/signin", current_page=self)
+
+    def goto_signin(self, e):
+        self.will_unmount()
+        navigate("/signin")
 
     def build(self):
         username_field = input_field(
-            "Enter your email address", 
+            "Enter your username", 
             ft.Icons.VERIFIED_USER_OUTLINED, 
             hide=False,
             rx_value=self.signup_controller.username
@@ -176,13 +106,13 @@ class SignUpScreen(FletXPage):
         )
         auth_controls = auth_action_controlls(
             primary_action_text="Sign In",
-            primary_action_on_click=self.go_to_signin,
+            primary_action_on_click=self.goto_signin,
             show_forgot_password=False,
             forgot_password_on_click=None
         )
         main_btn = main_auth_btn("Sign Up", on_click=self.handle_signup)
         divider = auth_divider()
-
+        
         self.widgets_to_cleanup.append(username_field)
         self.widgets_to_cleanup.append(email_field)
         self.widgets_to_cleanup.append(phonenumber_field)
@@ -277,9 +207,6 @@ class SignUpScreen(FletXPage):
                         repeat_password_field,
                         ft.Container(height=10),
                         # Error message display
-                        self.error_text,
-                        # Success message display
-                        self.success_text,
                         ft.Container(height=15),
                         ft.Row(
                             alignment=ft.MainAxisAlignment.CENTER,
@@ -311,6 +238,7 @@ class SignUpScreen(FletXPage):
                                         shape=ft.CircleBorder(),
                                         elevation=3,
                                         tooltip="Continue with Google",
+                                        on_click=self.goto_signin
                                     ),
                                 ),
                                 ft.Container(

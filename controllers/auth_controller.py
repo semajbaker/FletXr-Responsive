@@ -1,9 +1,10 @@
+from fletx import FletX
 from fletx.core import FletXController
-from utils import get_storage
-from services.auth_service import SignInService, SignUpService
+from utils import get_storage, get_http_error_message
+from services.auth_service import SignInService, SignUpService, SessionService
 import re
 
-class SigninController(FletXController):
+class SignInController(FletXController):
     def __init__(self):
         super().__init__()
         self.email = self.create_rx_str("")
@@ -58,7 +59,7 @@ class SigninController(FletXController):
             "password": self.password.value
         }
 
-    async def signin(self):
+    def signin(self):
         """
         Perform sign in operation
         Returns: (success: bool, message: str, data: dict)
@@ -79,7 +80,7 @@ class SigninController(FletXController):
         
         try:
             # Call the signin service
-            response = await self.signin_service.post(
+            response = self.signin_service.post(
                 email=self.email.value,
                 password=self.password.value
             )
@@ -93,7 +94,7 @@ class SigninController(FletXController):
                 }
                 get_storage().set('tokens', tokens)
                 self.is_loading.value = False
-                return True, "Sign in successful!", data
+                return True, "login successful!", data
             else:
                 error_data = response.json()
                 error_message = error_data.get("message", "Sign in failed")
@@ -115,95 +116,7 @@ class SigninController(FletXController):
         self.is_valid.value = False
         self.is_loading.value = False
 
-
-class ForgotPasswordController(FletXController):
-    def __init__(self):
-        super().__init__()
-        self.email = self.create_rx_str("")
-        self.error = self.create_rx_str("")
-        self.success = self.create_rx_str("")
-        self.is_valid = self.create_rx_bool(False)
-        self.is_loading = self.create_rx_bool(False)
-
-    def on_ready(self):
-        self.email.listen(self.validate_form)
-        # Run initial validation
-        self.validate_form()
-
-    def validate_email(self, email: str) -> bool:
-        """Validate email format"""
-        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
-        return re.match(email_pattern, email) is not None
-
-    def validate_form(self):
-        """Validate forgot password form"""
-        # Clear previous messages
-        self.success.value = ""
-        
-        # Check if email is filled
-        if not self.email.value:
-            self.error.value = "Email address is required"
-            self.is_valid.value = False
-            return
-
-        # Check if email has content (strip whitespace)
-        if not self.email.value.strip():
-            self.error.value = "Email address is required"
-            self.is_valid.value = False
-            return
-
-        # Validate email format
-        if not self.validate_email(self.email.value):
-            self.error.value = "Please enter a valid email address"
-            self.is_valid.value = False
-            return
-
-        # All validations passed
-        self.error.value = ""
-        self.is_valid.value = True
-        print(f"ForgotPasswordController: Form is valid! Email: {self.email.value}, is_valid: {self.is_valid.value}")
-
-    def send_reset_link(self) -> bool:
-        """
-        Send password reset link
-        Returns: True if successful, False otherwise
-        """
-        if not self.is_valid.value:
-            return False
-
-        self.is_loading.value = True
-        self.error.value = ""
-        self.success.value = ""
-
-        try:
-            # TODO: Implement actual password reset logic here
-            # Example: Call your backend API
-            # response = api.send_password_reset(self.email.value)
-            
-            # Simulate success for now
-            self.success.value = f"Password reset link sent to {self.email.value}"
-            self.is_loading.value = False
-            return True
-            
-        except Exception as e:
-            self.error.value = f"Failed to send reset link: {str(e)}"
-            self.is_loading.value = False
-            return False
-
-    def get_email(self) -> str:
-        """Get the email address"""
-        return self.email.value
-
-    def reset_form(self):
-        """Reset all form fields"""
-        self.email.value = ""
-        self.error.value = ""
-        self.success.value = ""
-        self.is_valid.value = False
-        self.is_loading.value = False
-
-
-class SignupController(FletXController):
+class SignUpController(FletXController):
     def __init__(self):
         super().__init__()
         self.username = self.create_rx_str("")
@@ -347,7 +260,7 @@ class SignupController(FletXController):
             "password": self.password.value
         }
 
-    async def signup(self):
+    def signup(self):
         """
         Perform sign up operation
         Returns: (success: bool, message: str, data: dict)
@@ -369,7 +282,7 @@ class SignupController(FletXController):
         
         try:
             # Call the signup service
-            response = await self.signup_service.post(
+            response =  self.signup_service.post(
                 username=self.username.value,
                 email=self.email.value,
                 password=self.password.value,
@@ -379,6 +292,11 @@ class SignupController(FletXController):
             # Check if response is successful
             if response.status == 201:  # 201 Created for registration
                 data = response.json()
+                tokens = {
+                    'access': data.get('data')['access_token'],
+                    'refresh': data.get('data')['refresh_token']
+                }
+                get_storage().set('tokens', tokens)
                 self.is_loading.value = False
                 return True, "Sign up successful!", data
             else:
@@ -404,3 +322,135 @@ class SignupController(FletXController):
         self.signup_error.value = ""
         self.is_valid.value = False
         self.is_loading.value = False
+
+class ForgotPasswordController(FletXController):
+    def __init__(self):
+        super().__init__()
+        self.email = self.create_rx_str("")
+        self.error = self.create_rx_str("")
+        self.success = self.create_rx_str("")
+        self.is_valid = self.create_rx_bool(False)
+        self.is_loading = self.create_rx_bool(False)
+
+    def on_ready(self):
+        self.email.listen(self.validate_form)
+        # Run initial validation
+        self.validate_form()
+
+    def validate_email(self, email: str) -> bool:
+        """Validate email format"""
+        email_pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+        return re.match(email_pattern, email) is not None
+
+    def validate_form(self):
+        """Validate forgot password form"""
+        # Clear previous messages
+        self.success.value = ""
+        
+        # Check if email is filled
+        if not self.email.value:
+            self.error.value = "Email address is required"
+            self.is_valid.value = False
+            return
+
+        # Check if email has content (strip whitespace)
+        if not self.email.value.strip():
+            self.error.value = "Email address is required"
+            self.is_valid.value = False
+            return
+
+        # Validate email format
+        if not self.validate_email(self.email.value):
+            self.error.value = "Please enter a valid email address"
+            self.is_valid.value = False
+            return
+
+        # All validations passed
+        self.error.value = ""
+        self.is_valid.value = True
+        print(f"ForgotPasswordController: Form is valid! Email: {self.email.value}, is_valid: {self.is_valid.value}")
+
+    def send_reset_link(self) -> bool:
+        """
+        Send password reset link
+        Returns: True if successful, False otherwise
+        """
+        if not self.is_valid.value:
+            return False
+
+        self.is_loading.value = True
+        self.error.value = ""
+        self.success.value = ""
+
+        try:
+            # TODO: Implement actual password reset logic here
+            # Example: Call your backend API
+            # response = api.send_password_reset(self.email.value)
+            
+            # Simulate success for now
+            self.success.value = f"Password reset link sent to {self.email.value}"
+            self.is_loading.value = False
+            return True
+            
+        except Exception as e:
+            self.error.value = f"Failed to send reset link: {str(e)}"
+            self.is_loading.value = False
+            return False
+
+    def get_email(self) -> str:
+        """Get the email address"""
+        return self.email.value
+
+    def reset_form(self):
+        """Reset all form fields"""
+        self.email.value = ""
+        self.error.value = ""
+        self.success.value = ""
+        self.is_valid.value = False
+        self.is_loading.value = False
+
+class SessionController(FletXController):
+    def __init__(self):
+        super().__init__()
+        self.session_service = SessionService()
+
+    def refresh_token(self):
+        """Process token refresh request"""
+
+         # Ste Loading state
+        self.set_loading(True)
+        success = False
+
+        try:
+            res = self.session_service.refresh_token()
+
+            if res.status == 200:
+                # Then save tokens
+                tokens = res.json()
+                get_storage().set('tokens', tokens)
+                
+                # set logged_in
+                get_storage().set('logged_in',True)
+
+                success =  True
+
+            # If request failed, set error message
+            else:
+                self.set_error(
+                    get_http_error_message(res)
+                )
+
+        # An error occurs
+        except Exception as e:
+            print(e)
+            self.set_error(str(e))
+
+        # Close loading state finally
+        finally:
+            self.set_loading(False)
+            return success
+        
+FletX.put(SignInController(), tag='signin_ctrl')
+FletX.put(SignUpController(), tag='signup_ctrl')
+FletX.put(ForgotPasswordController(), tag='forgot_password_ctrl')
+FletX.put(SessionController(), tag='forgot_password_ctrl')
