@@ -35,23 +35,23 @@ services:
     depends_on:
       - database 
 
-  #flet:
-  #  image: python:custom
-  #  container_name: flet_app
-  #  ports:
-  #    - "8000-8010:8000-8010"
-  #  user: "james"
-  #  volumes:
-  #    - ./:/home/james
-  #  command: ["bash", "auto_reload.sh"]
-  #  environment:
-  #    - PYTHONUNBUFFERED=1 
-  #    - PYTHONIOENCODING=utf-8  
-  #  tty: true 
-  #  stdin_open: true  
-  #  networks:
-  #    loan_management_net:
-  #      ipv4_address: 192.168.0.4
+  flet:
+    image: python:custom
+    container_name: flet_app
+    ports:
+      - "8000-8010:8000-8010"
+    user: "james"
+    volumes:
+      - ./:/home/james
+    command: ["bash", "auto_reload.sh"]
+    environment:
+      - PYTHONUNBUFFERED=1 
+      - PYTHONIOENCODING=utf-8  
+    tty: true 
+    stdin_open: true  
+    networks:
+      loan_management_net:
+        ipv4_address: 192.168.0.4
   api:
     image: node:express
     container_name: node_express_api
