@@ -71,7 +71,7 @@ class SignUpScreen(FletXPage):
             navigate("/signin")
         else:
             print(f"Sign up failed: {message}")
-            self.snackbar.show_success(self.page, message)
+            self.snackbar.show_error(self.page, message)
             # Error is already set in the controller and will be displayed
 
     def goto_signin(self, e):
