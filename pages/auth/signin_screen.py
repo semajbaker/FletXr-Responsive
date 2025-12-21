@@ -11,6 +11,7 @@ from widgets.auth_divider import auth_divider
 from controllers.auth_controller import SignInController
 from constants.ui_constants import AppColors
 from utils.responsive_manager import MediaQuery
+from widgets.snackbar_message import SnackbarMessage
 
 class SignInScreen(FletXPage):
     def __init__(self):
@@ -22,13 +23,14 @@ class SignInScreen(FletXPage):
         self.widgets_to_cleanup = []
         self.signin_controller: SignInController = FletX.find(
             SignInController, tag='signin_ctrl'
-            )
+        )
+        # Initialize snackbar widget
+        self.snackbar = SnackbarMessage()
+        
     def on_init(self):
-        # This will attach a NEW listener to the EXISTING controller
+        # Initialize animation and other managers
         AnimationManager.initialize_with_page(self.page)
-        # Set the boxes to animate
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
-        # Start animation
         AnimationManager.start_animation()
 
         MediaQuery.update_page_reference(self.page)
@@ -60,11 +62,14 @@ class SignInScreen(FletXPage):
         
         if success:
             print(f"Message: {message}")
-            # Navigate to home or dashboard
+            # Show success snackbar
+            self.snackbar.show_success(self.page, message)
+            # Navigate to home or dashboard after a brief delay (optional)
             # safe_navigate("/home", current_page=self, replace=True, clear_history=True)
         else:
             print(f"Sign in failed: {message}")
-            # Error is already set in the controller and will be displayed
+            # Show error snackbar
+            self.snackbar.show_error(self.page, message)
     
     def goto_signup(self, e):
         self.will_unmount()

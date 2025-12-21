@@ -11,6 +11,7 @@ from controllers.auth_controller import SignUpController
 from utils.animation_manager import AnimationManager
 from constants.ui_constants import AppColors
 from utils.responsive_manager import MediaQuery
+from widgets.snackbar_message import SnackbarMessage
 
 class SignUpScreen(FletXPage):
     def __init__(self):
@@ -22,7 +23,10 @@ class SignUpScreen(FletXPage):
         self.widgets_to_cleanup = []
         self.signup_controller: SignUpController = FletX.find(
             SignUpController, tag='signup_ctrl'
-            )
+        )
+        # Initialize snackbar widget
+        self.snackbar = SnackbarMessage()
+
     def on_init(self):
         # This will attach a NEW listener to the EXISTING controller
         AnimationManager.initialize_with_page(self.page)
@@ -61,12 +65,13 @@ class SignUpScreen(FletXPage):
         if success:
             print(f"Message: {message}")
             print(f"User data: {data}")
-            
+            self.snackbar.show_success(self.page, message)
             # Optionally reset form
             # self.signup_controller.reset_form()
             navigate("/signin")
         else:
             print(f"Sign up failed: {message}")
+            self.snackbar.show_success(self.page, message)
             # Error is already set in the controller and will be displayed
 
     def goto_signin(self, e):
