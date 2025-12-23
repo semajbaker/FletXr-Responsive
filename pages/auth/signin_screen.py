@@ -72,7 +72,7 @@ class SignInScreen(FletXPage):
             # Show success snackbar
             self.snackbar.show_success(self.page, message)
             self.signin_controller.reset_form()
-            navigate("/home")
+            navigate("/")
         else:
             print(f"Sign in failed: {message}")
             # Show error snackbar
