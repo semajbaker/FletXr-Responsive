@@ -1,4 +1,3 @@
-from fletx import FletX
 import flet as ft
 from fletx.app import FletXApp
 from utils.responsive_manager import MediaQuery
