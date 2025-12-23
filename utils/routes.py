@@ -1,10 +1,17 @@
 from fletx.navigation import ModuleRouter
 from fletx.decorators import register_router
+from utils.route_guards import AuthGuard
 from pages.auth.signin_screen import SignInScreen
 from pages.auth.signup_screen import SignUpScreen
 from pages.auth.forgot_password_screen import ForgotPasswordScreen
+from pages.core.home_screen import HomeScreen
 
 routes = [
+    {
+        "path": "/",
+        "component": HomeScreen,
+        "guards": [AuthGuard()],
+    },
     {
         'path': '/signin', 'component': SignInScreen
     },
@@ -13,7 +20,7 @@ routes = [
     },
     {
         'path': '/forgot-password', 'component': ForgotPasswordScreen
-    },
+    }
 ]
 
 @register_router

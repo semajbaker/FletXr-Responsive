@@ -114,7 +114,7 @@ class SessionService(FletXService):
         backend_url = os.getenv("BACKEND_URL", "http://localhost:5000")
         super().__init__(http_client=HTTPClient(base_url=backend_url,  sync_mode=True), **kwargs)
     
-    def get_token(self, name:str):
+    def get_token(self, name: str):
         """Return saved token from Client Storage"""
 
         tokens: dict = (
@@ -127,12 +127,19 @@ class SessionService(FletXService):
     def refresh_token(self):
         """Refresh auth tokens"""
 
-        token = self.get_token('access')
+        # Get the REFRESH token, not access token
+        token = self.get_token('access')  # ✅
+        
+        if not token:
+            raise Exception("No access token available")
 
         return self.http_client.post(
             endpoint = '/api/auth/refresh-token',
             json_data = {
                 "refreshToken": f"{token}"
+            },
+            headers = {
+                'Content-Type': 'application/json'
             }
         )
     

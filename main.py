@@ -1,3 +1,4 @@
+from fletx import FletX
 import flet as ft
 from fletx.app import FletXApp
 from utils.responsive_manager import MediaQuery
@@ -5,6 +6,7 @@ from fletx.navigation import NavigationMode
 from utils.routes import AppRouter
 
 def main():
+
     async def on_startup(page: ft.Page):
         print("App is running")
         # Initialize MediaQuery
@@ -20,7 +22,7 @@ def main():
 
     app = FletXApp(
         title="FletXr Responsive UI",
-        initial_route="/signin",
+        initial_route="/",
         debug=False,
         on_startup=on_startup,
         on_system_exit=on_system_exit,

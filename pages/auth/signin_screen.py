@@ -8,10 +8,11 @@ from widgets.input_field import input_field
 from widgets.main_auth_btn import main_auth_btn
 from widgets.auth_action_controls import auth_action_controlls
 from widgets.auth_divider import auth_divider
+from widgets.loading_inicator import loading_indicator
+from widgets.snackbar_message import SnackbarMessage
 from controllers.auth_controller import SignInController
 from constants.ui_constants import AppColors
 from utils.responsive_manager import MediaQuery
-from widgets.snackbar_message import SnackbarMessage
 
 class SignInScreen(FletXPage):
     def __init__(self):
@@ -32,9 +33,17 @@ class SignInScreen(FletXPage):
         AnimationManager.initialize_with_page(self.page)
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
         AnimationManager.start_animation()
-
         MediaQuery.update_page_reference(self.page)
         MediaQuery.debug_all_listeners()
+        self.watch(
+            self.signin_controller._is_loading,
+            lambda: loading_indicator(
+                controller = self.signin_controller,
+                page = self.page_instance,
+                message = "Signing in..."
+            ),
+            immediate = True,
+        )
         
     def on_destroy(self):
         # Cleanup widgets
@@ -56,16 +65,14 @@ class SignInScreen(FletXPage):
         print(f"Sign In clicked!")
         print(f"Email: {self.signin_controller.email.value}")
         print(f"Password: {self.signin_controller.password.value}")
-        
         # Call the signin method from controller
         success, message, data = self.signin_controller.signin()
-        
         if success:
             print(f"Message: {message}")
             # Show success snackbar
             self.snackbar.show_success(self.page, message)
-            # Navigate to home or dashboard after a brief delay (optional)
-            # safe_navigate("/home", current_page=self, replace=True, clear_history=True)
+            self.signin_controller.reset_form()
+            navigate("/home")
         else:
             print(f"Sign in failed: {message}")
             # Show error snackbar

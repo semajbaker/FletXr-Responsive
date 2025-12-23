@@ -39,7 +39,7 @@ services:
     image: python:custom
     container_name: flet_app
     ports:
-      - "8000-8010:8000-8010"
+      - 8000:8000
     user: "james"
     volumes:
       - ./:/home/james

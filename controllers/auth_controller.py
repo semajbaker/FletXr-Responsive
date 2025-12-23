@@ -1,6 +1,6 @@
 from fletx import FletX
 from fletx.core import FletXController
-from utils import get_storage, get_http_error_message
+from utils import get_storage, get_http_error_message, is_jwt_expired
 from services.auth_service import SignInService, SignUpService, SessionService
 import re
 
@@ -11,10 +11,8 @@ class SignInController(FletXController):
         self.password = self.create_rx_str("")
         self.signin_error = self.create_rx_str("")
         self.is_valid = self.create_rx_bool(False)
-        self.is_loading = self.create_rx_bool(False)
-        
         # Initialize the SignIn service
-        self.signin_service = SignInService()
+        self.signin_service: SignInService = FletX.put(SignInService(), tag='signin_srv')
 
     def on_ready(self):
         self.email.listen(self.validate_form)
@@ -75,9 +73,8 @@ class SignInController(FletXController):
             error_msg = self.signin_error.value or "Please fill in all fields correctly"
             return False, error_msg, None
         
-        self.is_loading.value = True
         self.signin_error.value = ""
-        
+        self.set_loading(True)
         try:
             # Call the signin service
             response = self.signin_service.post(
@@ -92,20 +89,21 @@ class SignInController(FletXController):
                     'access': data.get('data')['access_token'],
                     'refresh': data.get('data')['refresh_token']
                 }
+                print(tokens)
                 get_storage().set('tokens', tokens)
-                self.is_loading.value = False
+                self.set_loading(False)
                 return True, "login successful!", data
             else:
                 error_data = response.json()
                 error_message = error_data.get("message", "Sign in failed")
                 self.signin_error.value = error_message
-                self.is_loading.value = False
+                self.set_loading(False)
                 return False, error_message, None
                 
         except Exception as e:
             error_message = f"An error occurred: {str(e)}"
             self.signin_error.value = error_message
-            self.is_loading.value = False
+            self.set_loading(False)
             return False, error_message, None
 
     def reset_form(self):
@@ -114,7 +112,7 @@ class SignInController(FletXController):
         self.password.value = ""
         self.signin_error.value = ""
         self.is_valid.value = False
-        self.is_loading.value = False
+        
 
 class SignUpController(FletXController):
     def __init__(self):
@@ -126,10 +124,9 @@ class SignUpController(FletXController):
         self.confirm_password = self.create_rx_str("")
         self.signup_error = self.create_rx_str("")
         self.is_valid = self.create_rx_bool(False)
-        self.is_loading = self.create_rx_bool(False)
         
         # Initialize the SignUp service
-        self.signup_service = SignUpService()
+        self.signup_service: SignUpService = FletX.put(SignUpService(), tag='signup_srv')
 
     def on_ready(self):
         self.username.listen(self.validate_form)
@@ -277,9 +274,8 @@ class SignUpController(FletXController):
             error_msg = self.signup_error.value or "Please fill in all fields correctly"
             return False, error_msg, None
         
-        self.is_loading.value = True
         self.signup_error.value = ""
-        
+        self.set_loading(True)
         try:
             # Call the signup service
             response =  self.signup_service.post(
@@ -297,19 +293,19 @@ class SignUpController(FletXController):
                     'refresh': data.get('data')['refresh_token']
                 }
                 get_storage().set('tokens', tokens)
-                self.is_loading.value = False
+                self.set_loading(False)
                 return True, "Sign up successful!", data
             else:
                 error_data = response.json()
                 error_message = error_data.get("message", "Sign up failed")
                 self.signup_error.value = error_message
-                self.is_loading.value = False
+                self.set_loading(False)
                 return False, error_message, None
                 
         except Exception as e:
             error_message = f"An error occurred: {str(e)}"
             self.signup_error.value = error_message
-            self.is_loading.value = False
+            self.set_loading(False)
             return False, error_message, None
 
     def reset_form(self):
@@ -321,7 +317,6 @@ class SignUpController(FletXController):
         self.confirm_password.value = ""
         self.signup_error.value = ""
         self.is_valid.value = False
-        self.is_loading.value = False
 
 class ForgotPasswordController(FletXController):
     def __init__(self):
@@ -330,7 +325,6 @@ class ForgotPasswordController(FletXController):
         self.error = self.create_rx_str("")
         self.success = self.create_rx_str("")
         self.is_valid = self.create_rx_bool(False)
-        self.is_loading = self.create_rx_bool(False)
 
     def on_ready(self):
         self.email.listen(self.validate_form)
@@ -378,10 +372,9 @@ class ForgotPasswordController(FletXController):
         if not self.is_valid.value:
             return False
 
-        self.is_loading.value = True
         self.error.value = ""
         self.success.value = ""
-
+        self.set_loading(True)
         try:
             # TODO: Implement actual password reset logic here
             # Example: Call your backend API
@@ -389,12 +382,12 @@ class ForgotPasswordController(FletXController):
             
             # Simulate success for now
             self.success.value = f"Password reset link sent to {self.email.value}"
-            self.is_loading.value = False
+            self.set_loading(False)
             return True
             
         except Exception as e:
             self.error.value = f"Failed to send reset link: {str(e)}"
-            self.is_loading.value = False
+            self.set_loading(False)
             return False
 
     def get_email(self) -> str:
@@ -407,12 +400,11 @@ class ForgotPasswordController(FletXController):
         self.error.value = ""
         self.success.value = ""
         self.is_valid.value = False
-        self.is_loading.value = False
 
 class SessionController(FletXController):
     def __init__(self):
         super().__init__()
-        self.session_service = SessionService()
+        self.session_service: SessionService = FletX.put(SessionService(), tag='session_srv')
 
     def refresh_token(self):
         """Process token refresh request"""
@@ -430,7 +422,7 @@ class SessionController(FletXController):
                 get_storage().set('tokens', tokens)
                 
                 # set logged_in
-                get_storage().set('logged_in',True)
+                get_storage().set('logged_in', True)
 
                 success =  True
 
@@ -450,7 +442,21 @@ class SessionController(FletXController):
             self.set_loading(False)
             return success
         
+    def get_token(self) -> bool:
+            token = self.session_service.get_token('access')
+
+            # 1. Token exists?
+            if not token or not token.strip():
+                return False
+
+            # 2. Token expired?
+            if is_jwt_expired(token):
+                print("Access token expired")
+                return False
+
+            return True
+        
 FletX.put(SignInController(), tag='signin_ctrl')
 FletX.put(SignUpController(), tag='signup_ctrl')
 FletX.put(ForgotPasswordController(), tag='forgot_password_ctrl')
-FletX.put(SessionController(), tag='forgot_password_ctrl')
+FletX.put(SessionController(), tag='session_ctrl')

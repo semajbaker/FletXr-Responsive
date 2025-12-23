@@ -7,11 +7,12 @@ from widgets.input_field import input_field
 from widgets.main_auth_btn import main_auth_btn
 from widgets.auth_action_controls import auth_action_controlls
 from widgets.auth_divider import auth_divider
+from widgets.loading_inicator import loading_indicator
+from widgets.snackbar_message import SnackbarMessage
 from controllers.auth_controller import SignUpController
 from utils.animation_manager import AnimationManager
 from constants.ui_constants import AppColors
 from utils.responsive_manager import MediaQuery
-from widgets.snackbar_message import SnackbarMessage
 
 class SignUpScreen(FletXPage):
     def __init__(self):
@@ -30,15 +31,20 @@ class SignUpScreen(FletXPage):
     def on_init(self):
         # This will attach a NEW listener to the EXISTING controller
         AnimationManager.initialize_with_page(self.page)
-        # Set the boxes to animate
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
-        # Start animation
         AnimationManager.start_animation()
-        
         MediaQuery.update_page_reference(self.page)
         MediaQuery.debug_all_listeners()
+        self.watch(
+            self.signup_controller._is_loading,
+            lambda: loading_indicator(
+                controller = self.signup_controller,
+                page = self.page_instance,
+                message= "Signing up..."
+            ),
+            immediate = True,
+        )
         
-
     def on_destroy(self):
         # Cleanup widgets
         for widget in self.widgets_to_cleanup:
@@ -58,7 +64,6 @@ class SignUpScreen(FletXPage):
         print(f"Sign Up clicked!")
         print(f"Username: {self.signup_controller.username.value}")
         print(f"Email: {self.signup_controller.email.value}")
-        
         # Call the signup method from controller
         success, message, data = self.signup_controller.signup()
         
@@ -66,13 +71,11 @@ class SignUpScreen(FletXPage):
             print(f"Message: {message}")
             print(f"User data: {data}")
             self.snackbar.show_success(self.page, message)
-            # Optionally reset form
-            # self.signup_controller.reset_form()
+            self.signup_controller.reset_form()
             navigate("/signin")
         else:
             print(f"Sign up failed: {message}")
             self.snackbar.show_error(self.page, message)
-            # Error is already set in the controller and will be displayed
 
     def goto_signin(self, e):
         self.will_unmount()

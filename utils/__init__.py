@@ -1,3 +1,5 @@
+import jwt
+import time
 from fletx.utils import get_page
 from fletx.core.http import HTTPResponse
 
@@ -5,6 +7,25 @@ def get_storage():
     """Return Running Page's Client Storage"""
 
     return get_page().client_storage
+
+def is_jwt_expired(token: str) -> bool:
+    """
+    Returns True if token is expired or invalid
+    """
+    try:
+        decoded = jwt.decode(
+            token,
+            options={"verify_signature": False}  # client-side check only
+        )
+        exp = decoded.get("exp")
+
+        if not exp:
+            return True  # no expiry → treat as invalid
+
+        return time.time() >= exp
+
+    except Exception:
+        return True
 
 def get_http_error_message(res: HTTPResponse):
     """Return HTTP Error Message based on status code"""
