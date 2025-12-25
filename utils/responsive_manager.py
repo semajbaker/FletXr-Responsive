@@ -1,6 +1,5 @@
 """
-Modified responsive system for FletXr applications using proper lifecycle methods.
-
+Modified responsive system for FletXr applications.
 File: utils/responsive_manager.py
 """
 import flet as ft
@@ -11,7 +10,6 @@ from controllers.responsive_controller import MediaQueryController
 class MediaQuery:
     """
     Static utility class for easier access to media query functionality.
-    Uses FletX dependency injection system.
     """
     
     @classmethod
@@ -20,48 +18,24 @@ class MediaQuery:
         controller: MediaQueryController = FletX.find(MediaQueryController, tag='media_query_ctrl')
         
         if controller is None:
-            raise RuntimeError("MediaQueryController not found! Make sure it's initialized in main.py")
+            raise RuntimeError("MediaQueryController not found! Make sure it's initialized.")
         
         return controller
     
-    
     @classmethod
-    def dispose_controller(cls):
-        """Dispose the media query controller and clean up resources"""
-        controller: MediaQueryController = FletX.find(MediaQueryController, tag='media_query_ctrl')
-        
-        if controller is not None:
-            # Clean up the controller instance
-            controller.cleanup()
-            
-            # Remove from FletX dependency injection
-            try:
-                controller = FletX.reset()
-                print("MediaQuery Controller reset")
-            except Exception as e:
-                print(f"Error reseting MediaQuery Controller: {e}")
-        
-        return controller
-
-    @classmethod
-    def update_page_reference(cls, page: ft.Page):
-        """Update page reference for resize handler without full reinitialization"""
+    def handle_page_resize(cls, width: int, height: int):
+        """
+        Called from FletXPage's set_size method to handle resize.
+        This integrates with the MediaQuery system.
+        """
         controller = cls.get_controller()
-        
-        # Just update the page reference and attach resize handler
-        controller._page = page
-        page.on_resized = controller._handle_resize
-        
-        print(f"MediaQuery page reference updated. Handler attached: {page.on_resized is not None}")
-
+        controller.handle_resize(width, height)
+    
     @classmethod
     def reset_all(cls):
         """Navigation cleanup - clear page-specific listeners only"""
-        # DON'T dispose the controller - keep it alive
-        # Just reset page-specific state
         MediaQueryController.reset_shared_state()
-        
-        print("MediaQuery reset for navigation (controller preserved)")
+        print("MediaQuery reset for navigation")
         
     @classmethod
     def cleanup(cls):
@@ -71,12 +45,7 @@ class MediaQuery:
     @classmethod
     def shutdown(cls):
         """Complete shutdown - use only when app is closing"""
-        # First dispose the current controller
-        cls.dispose_controller()
-        
-        # Then completely reset everything including breakpoints
         MediaQueryController.complete_shutdown()
-        
         print("MediaQuery completely shut down")
     
     @classmethod
@@ -110,6 +79,12 @@ class MediaQuery:
         return controller.window_width.value
     
     @classmethod
+    def get_current_height(cls) -> int:
+        """Get the current window height"""
+        controller = cls.get_controller()
+        return controller.window_height.value
+    
+    @classmethod
     def get_shared_container_width_rx(cls):
         """Get the reactive container width property"""
         controller = cls.get_controller()
@@ -123,31 +98,31 @@ class MediaQuery:
 
     @classmethod
     def get_auth_divider_width_rx(cls):
-        """Get the reactive field width property"""
+        """Get the reactive divider width property"""
         controller = cls.get_controller()
         return controller.auth_divider_width
     
     @classmethod
     def get_auth_navigation_controls_width_rx(cls):
-        """Get the reactive field width property"""
+        """Get the reactive navigation controls width property"""
         controller = cls.get_controller()
         return controller.auth_navigation_controls_width
     
     @classmethod
     def initialize_with_page(cls, page: ft.Page):
-        """Initialize the media query system with a page - call from page's on_init"""
+        """Initialize the media query system with a page"""
         controller = cls.get_controller()
         controller.initialize_with_page(page)
     
     @classmethod
     def complete_registration(cls):
-        """Call after all breakpoints and listeners are registered to start responsive checking"""
+        """Call after all breakpoints are registered"""
         controller = cls.get_controller()
         controller.complete_registration()
     
     @classmethod
     def debug_listener_count(cls):
-        """Print current breakpoint listener counts for debugging"""
+        """Print current breakpoint listener counts"""
         controller = cls.get_controller()
         print("=== MediaQuery Listener Stats ===")
         total = controller.get_listener_count()
@@ -156,12 +131,6 @@ class MediaQuery:
 
     @classmethod
     def debug_all_listeners(cls):
-        """Print complete listener report including all reactive properties"""
+        """Print complete listener report"""
         controller = cls.get_controller()
         return controller.get_all_listener_counts()
-
-    @classmethod
-    def debug_listener_details(cls):
-        """Print detailed listener information with function names"""
-        controller = cls.get_controller()
-        controller.debug_listener_details()

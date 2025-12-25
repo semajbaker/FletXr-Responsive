@@ -29,12 +29,16 @@ class SignInScreen(FletXPage):
         self.snackbar = SnackbarMessage()
         
     def on_init(self):
+        # Initialize MediaQuery with page
+        MediaQuery.initialize_with_page(self.page)
+        MediaQuery.debug_all_listeners()
         # Initialize animation and other managers
         AnimationManager.initialize_with_page(self.page)
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
         AnimationManager.start_animation()
-        MediaQuery.update_page_reference(self.page)
-        MediaQuery.debug_all_listeners()
+        # Set up resize handler that works with both systems
+        self.page_instance.on_resized = lambda e: self.handle_resize(e)
+        
         self.watch(
             self.signin_controller._is_loading,
             lambda: loading_indicator(
@@ -60,6 +64,20 @@ class SignInScreen(FletXPage):
         MediaQuery.reset_all()
         print("Signin Screen destroyed")
 
+    def handle_resize(self, event: ft.ControlEvent):
+        """Combined resize handler for both FletXPage and MediaQuery"""
+        print(f'Resizing to {event.width}x{event.height}...')
+        
+        # Update FletXPage dimensions
+        self.width = event.width
+        self.height = event.height
+        
+        # Update MediaQuery system
+        MediaQuery.handle_page_resize(event.width, event.height)
+        
+        # Refresh the page
+        self.refresh()
+        
     def handle_signin(self, e):
         """Handle sign in button click"""
         print(f"Sign In clicked!")

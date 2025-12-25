@@ -24,15 +24,15 @@ class ForgotPasswordScreen(FletXPage):
         )
     
     def on_init(self):
-        # This will attach a NEW listener to the EXISTING controller
+        # Initialize MediaQuery with page
+        MediaQuery.initialize_with_page(self.page)
+        MediaQuery.debug_all_listeners()
         AnimationManager.initialize_with_page(self.page)
         # Set the boxes to animate
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
         # Start animation
         AnimationManager.start_animation()
-
-        MediaQuery.update_page_reference(self.page)
-        MediaQuery.debug_all_listeners()
+        self.page_instance.on_resized = lambda e: self.handle_resize(e)
         
     def on_destroy(self):
         # Cleanup widgets
@@ -48,6 +48,20 @@ class ForgotPasswordScreen(FletXPage):
         AnimationManager.cleanup()
         MediaQuery.reset_all()
         print("Forgot Password Screen destroyed")
+        
+    def handle_resize(self, event: ft.ControlEvent):
+        """Combined resize handler for both FletXPage and MediaQuery"""
+        print(f'Resizing to {event.width}x{event.height}...')
+        
+        # Update FletXPage dimensions
+        self.width = event.width
+        self.height = event.height
+        
+        # Update MediaQuery system
+        MediaQuery.handle_page_resize(event.width, event.height)
+        
+        # Refresh the page
+        self.refresh()
 
     def handle_send_reset_link(self, e):
         """Handle send reset link button click"""

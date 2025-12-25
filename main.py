@@ -8,8 +8,7 @@ def main():
 
     async def on_startup(page: ft.Page):
         print("App is running")
-        # Initialize MediaQuery
-        MediaQuery.initialize_with_page(page)
+        # Register MediaQuery breakpoints (only once at startup)
         MediaQuery.register("mobile", 0, 768)
         MediaQuery.register("tablet", 768, 1024)
         MediaQuery.register("desktop", 1024, float('inf'))
@@ -17,6 +16,7 @@ def main():
         print("MediaQuery breakpoints registered")
 
     def on_system_exit(page: ft.Page):
+        MediaQuery.shutdown()
         print("App has shutdown")
 
     app = FletXApp(
