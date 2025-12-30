@@ -2,7 +2,8 @@ import flet as ft
 from typing import Callable
 from fletx import FletX
 from fletx.core import FletXController, RxStr, RxInt, RxDict, RxList
-from constants.responsive_constants import *
+
+from app.constants.responsive_constants import *
 
 class MediaQueryController(FletXController):
     """

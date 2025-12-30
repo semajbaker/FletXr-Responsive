@@ -1,5 +1,6 @@
 import flet as ft
-from utils.responsive_manager import MediaQuery
+
+from app.utils.responsive_manager import MediaQuery
 
 class ResponsiveInputField(ft.Container):
     """Reactive input field that automatically updates when breakpoints change."""

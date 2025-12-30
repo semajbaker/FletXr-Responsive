@@ -1,8 +1,11 @@
-from fletx.core import FletXService
-from utils import get_storage
-from fletx.core.http import HTTPClient
-from dotenv import load_dotenv
 import os
+from typing import Optional
+from dotenv import load_dotenv
+
+from fletx.core import FletXService
+from fletx.core.http import HTTPClient
+
+from app.utils import get_storage
 
 load_dotenv()
 class SignInService(FletXService):
@@ -163,7 +166,7 @@ class LogoutService(FletXService):
         backend_url = os.getenv("BACKEND_URL", "http://localhost:5000")
         super().__init__(http_client=HTTPClient(base_url=backend_url, sync_mode=True), **kwargs)
 
-    def post(self, token: str = None):
+    def post(self, token: Optional[str] = None):
         """
         Logout user
         

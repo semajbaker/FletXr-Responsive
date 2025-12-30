@@ -1,6 +1,6 @@
 from fletx.core.routing.guards import RouteGuard
 from fletx import FletX
-from controllers.auth_controller import SessionController
+from app.controllers.auth_controller import SessionController
 
 class AuthGuard(RouteGuard):
 

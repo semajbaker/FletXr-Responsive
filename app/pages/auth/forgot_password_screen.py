@@ -2,18 +2,23 @@ import flet as ft
 from fletx import FletX
 from fletx.core import FletXPage
 from fletx.navigation import navigate
-from utils.animation_manager import AnimationManager
-from widgets.animated_box import animated_box
-from widgets.input_field import input_field
-from widgets.main_auth_btn import main_auth_btn
-from widgets.auth_action_controls import auth_action_controlls
-from constants.ui_constants import AppColors
-from controllers.auth_controller import ForgotPasswordController
-from utils.responsive_manager import MediaQuery
+
+from app.utils.animation_manager import AnimationManager
+from app.widgets.animated_box import animated_box
+from app.widgets.input_field import input_field
+from app.widgets.main_auth_btn import main_auth_btn
+from app.widgets.auth_action_controls import auth_action_controlls
+from app.constants.ui_constants import AppColors
+from app.controllers.auth_controller import ForgotPasswordController
+from app.utils.responsive_manager import MediaQuery
 
 class ForgotPasswordScreen(FletXPage):
     def __init__(self):
-        super().__init__()
+        super().__init__(
+            padding = ft.padding.only(left=0, right=0, top=0, bottom=0),
+            # You can use `ft.Colors` to access theme colors 
+            # Eg. bgcolor = Colors.SURFACE
+        )
         self.box1 = animated_box(ft.Colors.PINK_400, ft.Colors.PURPLE_300, 1.0)
         self.box2 = animated_box(ft.Colors.CYAN_400, ft.Colors.TEAL_300, 0.8)
         self.box3 = animated_box(ft.Colors.AMBER_400, ft.Colors.ORANGE_300, 1.2)
@@ -25,14 +30,16 @@ class ForgotPasswordScreen(FletXPage):
     
     def on_init(self):
         # Initialize MediaQuery with page
-        MediaQuery.initialize_with_page(self.page)
+        MediaQuery.initialize_with_page(self.page_instance)
         MediaQuery.debug_all_listeners()
-        AnimationManager.initialize_with_page(self.page)
+        AnimationManager.initialize_with_page(self.page_instance)
         # Set the boxes to animate
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
         # Start animation
         AnimationManager.start_animation()
-        self.page_instance.on_resized = lambda e: self.handle_resize(e)
+
+        # We don't need this Anymore since FletXPage autoresize itself when App window size changes. 
+        # self.page_instance.on_resized = lambda e: self.handle_resize(e)
         
     def on_destroy(self):
         # Cleanup widgets
@@ -48,20 +55,21 @@ class ForgotPasswordScreen(FletXPage):
         AnimationManager.cleanup()
         MediaQuery.reset_all()
         print("Forgot Password Screen destroyed")
+
         
-    def handle_resize(self, event: ft.ControlEvent):
-        """Combined resize handler for both FletXPage and MediaQuery"""
-        print(f'Resizing to {event.width}x{event.height}...')
+    # def handle_resize(self, event: ft.ControlEvent):
+    #     """Combined resize handler for both FletXPage and MediaQuery"""
+    #     print(f'Resizing to {event.width}x{event.height}...')
         
-        # Update FletXPage dimensions
-        self.width = event.width
-        self.height = event.height
+    #     # Update FletXPage dimensions
+    #     self.width = event.width
+    #     self.height = event.height
         
-        # Update MediaQuery system
-        MediaQuery.handle_page_resize(event.width, event.height)
+    #     # Update MediaQuery system
+    #     MediaQuery.handle_page_resize(event.width, event.height)
         
-        # Refresh the page
-        self.refresh()
+    #     # Refresh the page
+    #     self.refresh()
 
     def handle_send_reset_link(self, e):
         """Handle send reset link button click"""

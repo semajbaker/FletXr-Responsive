@@ -1,6 +1,7 @@
 import flet as ft
 from fletx.navigation import navigate
-from constants.ui_constants import AppColors
+
+from app.constants.ui_constants import AppColors
 
 def sidebar_item(icon: str, label: str, route: str, is_active: bool = False):
     """Create a sidebar menu item"""
