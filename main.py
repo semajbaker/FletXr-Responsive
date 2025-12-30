@@ -1,13 +1,17 @@
 import flet as ft
 from fletx.app import FletXApp
-from utils.responsive_manager import MediaQuery
 from fletx.navigation import NavigationMode
-from utils.routes import AppRouter
+
+from app.utils.responsive_manager import MediaQuery
+from app.routes import AppRouter
+from app.utils.theme import light_theme, dark_theme
 
 def main():
 
     async def on_startup(page: ft.Page):
         print("App is running")
+        # remove page padding bby default
+        page.padding = 0 
         # Register MediaQuery breakpoints (only once at startup)
         MediaQuery.register("mobile", 0, 768)
         MediaQuery.register("tablet", 768, 1024)
@@ -23,6 +27,9 @@ def main():
         title="FletXr Responsive UI",
         initial_route="/",
         debug=False,
+        theme = light_theme,
+        dark_theme = dark_theme,
+        theme_mode= ft.ThemeMode.SYSTEM,
         on_startup=on_startup,
         on_system_exit=on_system_exit,
         navigation_mode=NavigationMode.NATIVE,
