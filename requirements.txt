@@ -1,7 +1,5 @@
 setuptools
 flet[all]
-fletxr
-#just in case
 flet_cli
 flet_desktop
 
