@@ -4,12 +4,12 @@ from utils.route_guards import AuthGuard
 from pages.auth.signin_screen import SignInScreen
 from pages.auth.signup_screen import SignUpScreen
 from pages.auth.forgot_password_screen import ForgotPasswordScreen
-from pages.core.home_screen import HomeScreen
+from pages.core.dashboard_screen import DashboardScreen
 
 routes = [
     {
         "path": "/",
-        "component": HomeScreen,
+        "component": DashboardScreen,
         "guards": [AuthGuard()],
     },
     {

@@ -88,6 +88,7 @@ class SignUpScreen(FletXPage):
             print(f"User data: {data}")
             self.snackbar.show_success(self.page, message)
             self.signup_controller.reset_form()
+            self.will_unmount()
             navigate("/signin")
         else:
             print(f"Sign up failed: {message}")

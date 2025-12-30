@@ -8,7 +8,8 @@ class HomeScreen(FletXPage):
         super().__init__()
 
     def on_init(self):
-        MediaQuery.update_page_reference(self.page)
+        MediaQuery.initialize_with_page(self.page)
+        MediaQuery.debug_all_listeners()
         MediaQuery.debug_all_listeners()
 
     def build(self):

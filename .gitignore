@@ -1,7 +1,7 @@
 __pycache__/
 node_modules/
+build/
 db/
-api/
 storage/
 .vscode/
 .npm/
