@@ -11,3 +11,4 @@ session_data.json
 *.pyd
 *.pwc
 *.pkl
+*.lock
