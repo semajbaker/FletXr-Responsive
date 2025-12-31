@@ -1,7 +1,8 @@
 from fletx import FletX
 from fletx.core import FletXController
-from utils import get_storage, get_http_error_message, is_jwt_expired
-from services.auth_service import SignInService, SignUpService, SessionService
+
+from app.utils import get_storage, get_http_error_message, is_jwt_expired
+from app.services.auth_service import SignInService, SignUpService, SessionService
 import re
 
 class SignInController(FletXController):

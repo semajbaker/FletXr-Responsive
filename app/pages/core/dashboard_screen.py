@@ -1,14 +1,19 @@
 import flet as ft
 from fletx.core import FletXPage
-from utils.responsive_manager import MediaQuery
-from constants.ui_constants import AppColors
+
+from app.utils.responsive_manager import MediaQuery
+from app.constants.ui_constants import AppColors
 
 class HomeScreen(FletXPage):
     def __init__(self):
-        super().__init__()
+        super().__init__(
+            padding = ft.padding.only(left=0, right=0, top=0, bottom=0),
+            # You can uuse `ft.Colors` to access theme colors 
+            # Eg. bgcolor = Colors.SURFACE
+        )
 
     def on_init(self):
-        MediaQuery.initialize_with_page(self.page)
+        MediaQuery.initialize_with_page(self.page_instance)
         MediaQuery.debug_all_listeners()
         MediaQuery.debug_all_listeners()
 

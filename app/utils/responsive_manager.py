@@ -5,7 +5,7 @@ File: utils/responsive_manager.py
 import flet as ft
 from fletx import FletX
 from typing import Callable
-from controllers.responsive_controller import MediaQueryController
+from app.controllers.responsive_controller import MediaQueryController
 
 class MediaQuery:
     """

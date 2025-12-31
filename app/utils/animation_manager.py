@@ -7,7 +7,7 @@ import flet as ft
 from math import pi, sin, cos
 from fletx import FletX
 from typing import Optional, Callable
-from controllers.animation_controller import AnimationController
+from app.controllers.animation_controller import AnimationController
 
 class AnimationManager:
     """

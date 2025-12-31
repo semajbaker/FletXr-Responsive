@@ -2,21 +2,26 @@ import flet as ft
 from fletx import FletX
 from fletx.core import FletXPage
 from fletx.navigation import navigate
-from utils.animation_manager import AnimationManager
-from widgets.animated_box import animated_box
-from widgets.input_field import input_field
-from widgets.main_auth_btn import main_auth_btn
-from widgets.auth_action_controls import auth_action_controlls
-from widgets.auth_divider import auth_divider
-from widgets.loading_inicator import loading_indicator
-from widgets.snackbar_message import SnackbarMessage
-from controllers.auth_controller import SignInController
-from constants.ui_constants import AppColors
-from utils.responsive_manager import MediaQuery
+
+from app.utils.animation_manager import AnimationManager
+from app.widgets.animated_box import animated_box
+from app.widgets.input_field import input_field
+from app.widgets.main_auth_btn import main_auth_btn
+from app.widgets.auth_action_controls import auth_action_controlls
+from app.widgets.auth_divider import auth_divider
+from app.widgets.loading_inicator import loading_indicator
+from app.widgets.snackbar_message import SnackbarMessage
+from app.controllers.auth_controller import SignInController
+from app.constants.ui_constants import AppColors
+from app.utils.responsive_manager import MediaQuery
 
 class SignInScreen(FletXPage):
     def __init__(self):
-        super().__init__()
+        super().__init__(
+            padding = ft.padding.only(left=0, right=0, top=0, bottom=0),
+            # You can uuse `ft.Colors` to access theme colors 
+            # Eg. bgcolor = Colors.SURFACE
+        )
         self.box1 = animated_box(ft.Colors.PINK_400, ft.Colors.PURPLE_300, 1.0)
         self.box2 = animated_box(ft.Colors.CYAN_400, ft.Colors.TEAL_300, 0.8)
         self.box3 = animated_box(ft.Colors.AMBER_400, ft.Colors.ORANGE_300, 1.2)
@@ -36,8 +41,6 @@ class SignInScreen(FletXPage):
         AnimationManager.initialize_with_page(self.page)
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
         AnimationManager.start_animation()
-        # Set up resize handler that works with both systems
-        self.page_instance.on_resized = lambda e: self.handle_resize(e)
         
         self.watch(
             self.signin_controller._is_loading,
@@ -64,19 +67,19 @@ class SignInScreen(FletXPage):
         MediaQuery.reset_all()
         print("Signin Screen destroyed")
 
-    def handle_resize(self, event: ft.ControlEvent):
-        """Combined resize handler for both FletXPage and MediaQuery"""
-        print(f'Resizing to {event.width}x{event.height}...')
+    # def handle_resize(self, event: ft.ControlEvent):
+    #     """Combined resize handler for both FletXPage and MediaQuery"""
+    #     print(f'Resizing to {event.width}x{event.height}...')
         
-        # Update FletXPage dimensions
-        self.width = event.width
-        self.height = event.height
+    #     # Update FletXPage dimensions
+    #     self.width = event.width
+    #     self.height = event.height
         
-        # Update MediaQuery system
-        MediaQuery.handle_page_resize(event.width, event.height)
+    #     # Update MediaQuery system
+    #     MediaQuery.handle_page_resize(event.width, event.height)
         
-        # Refresh the page
-        self.refresh()
+    #     # Refresh the page
+    #     self.refresh()
         
     def handle_signin(self, e):
         """Handle sign in button click"""

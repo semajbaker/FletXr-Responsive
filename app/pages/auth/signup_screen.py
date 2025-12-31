@@ -2,21 +2,26 @@ import flet as ft
 from fletx import FletX
 from fletx.core import FletXPage
 from fletx.navigation import navigate
-from widgets.animated_box import animated_box
-from widgets.input_field import input_field
-from widgets.main_auth_btn import main_auth_btn
-from widgets.auth_action_controls import auth_action_controlls
-from widgets.auth_divider import auth_divider
-from widgets.loading_inicator import loading_indicator
-from widgets.snackbar_message import SnackbarMessage
-from controllers.auth_controller import SignUpController
-from utils.animation_manager import AnimationManager
-from constants.ui_constants import AppColors
-from utils.responsive_manager import MediaQuery
+
+from app.widgets.animated_box import animated_box
+from app.widgets.input_field import input_field
+from app.widgets.main_auth_btn import main_auth_btn
+from app.widgets.auth_action_controls import auth_action_controlls
+from app.widgets.auth_divider import auth_divider
+from app.widgets.loading_inicator import loading_indicator
+from app.widgets.snackbar_message import SnackbarMessage
+from app.controllers.auth_controller import SignUpController
+from app.utils.animation_manager import AnimationManager
+from app.constants.ui_constants import AppColors
+from app.utils.responsive_manager import MediaQuery
 
 class SignUpScreen(FletXPage):
     def __init__(self):
-        super().__init__()
+        super().__init__(
+            padding = ft.padding.only(left=0, right=0, top=0, bottom=0),
+            # You can use `ft.Colors` to access theme colors 
+            # Eg. bgcolor = Colors.SURFACE
+        )
         self.box1 = animated_box(ft.Colors.PINK_400, ft.Colors.PURPLE_300, 1.0)
         self.box2 = animated_box(ft.Colors.CYAN_400, ft.Colors.TEAL_300, 0.8)
         self.box3 = animated_box(ft.Colors.AMBER_400, ft.Colors.ORANGE_300, 1.2)
@@ -30,12 +35,11 @@ class SignUpScreen(FletXPage):
 
     def on_init(self):
         # Initialize MediaQuery with page
-        MediaQuery.initialize_with_page(self.page)
+        MediaQuery.initialize_with_page(self.page_instance)
         MediaQuery.debug_all_listeners()
-        AnimationManager.initialize_with_page(self.page)
+        AnimationManager.initialize_with_page(self.page_instance)
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
         AnimationManager.start_animation()
-        self.page_instance.on_resized = lambda e: self.handle_resize(e)
 
         self.watch(
             self.signup_controller._is_loading,
