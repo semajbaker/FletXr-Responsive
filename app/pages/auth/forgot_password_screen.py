@@ -37,9 +37,8 @@ class ForgotPasswordScreen(FletXPage):
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
         # Start animation
         AnimationManager.start_animation()
-
-        # We don't need this Anymore since FletXPage autoresize itself when App window size changes. 
-        # self.page_instance.on_resized = lambda e: self.handle_resize(e)
+        # Set up resize handler that works with both systems
+        self.page_instance.on_resized = lambda e: self.handle_resize(e)
         
     def on_destroy(self):
         # Cleanup widgets
@@ -57,19 +56,19 @@ class ForgotPasswordScreen(FletXPage):
         print("Forgot Password Screen destroyed")
 
         
-    # def handle_resize(self, event: ft.ControlEvent):
-    #     """Combined resize handler for both FletXPage and MediaQuery"""
-    #     print(f'Resizing to {event.width}x{event.height}...')
+    def handle_resize(self, event: ft.ControlEvent):
+         """Combined resize handler for both FletXPage and MediaQuery"""
+         print(f'Resizing to {event.width}x{event.height}...')
         
-    #     # Update FletXPage dimensions
-    #     self.width = event.width
-    #     self.height = event.height
+         # Update FletXPage dimensions
+         self.width = event.width
+         self.height = event.height
         
-    #     # Update MediaQuery system
-    #     MediaQuery.handle_page_resize(event.width, event.height)
+         # Update MediaQuery system
+         MediaQuery.handle_page_resize(event.width, event.height)
         
-    #     # Refresh the page
-    #     self.refresh()
+         # Refresh the page
+         self.refresh()
 
     def handle_send_reset_link(self, e):
         """Handle send reset link button click"""

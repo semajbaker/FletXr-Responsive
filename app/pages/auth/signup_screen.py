@@ -40,7 +40,9 @@ class SignUpScreen(FletXPage):
         AnimationManager.initialize_with_page(self.page_instance)
         AnimationManager.set_boxes(self.box1, self.box2, self.box3, self.box4)
         AnimationManager.start_animation()
-
+        # Set up resize handler that works with both systems
+        self.page_instance.on_resized = lambda e: self.handle_resize(e)
+        
         self.watch(
             self.signup_controller._is_loading,
             lambda: loading_indicator(
